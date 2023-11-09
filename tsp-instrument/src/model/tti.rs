@@ -73,6 +73,7 @@ impl Login for Instrument {
 
         let mut resp: Vec<u8> = vec![0; 256];
         let _read = self.read(&mut resp)?;
+        println!("resp in check_login is {:?}", String::from_utf8_lossy(&resp));
 
         let resp = std::str::from_utf8(resp.as_slice())
             .unwrap_or("")
@@ -80,6 +81,9 @@ impl Login for Instrument {
             .trim();
 
         if resp.contains("FAILURE") {
+            if resp.contains("LOGOUT"){
+                return Ok(instrument::State::LogoutNeeded);
+            }
             Ok(instrument::State::Needed)
         } else {
             Ok(instrument::State::NotNeeded)
@@ -92,7 +96,6 @@ impl Login for Instrument {
         }
 
         self.write_all(format!("login {}\n", String::from_utf8_lossy(token)).as_bytes())?;
-
         if instrument::State::Needed == self.check_login()? {
             return Err(InstrumentError::LoginRejected);
         }

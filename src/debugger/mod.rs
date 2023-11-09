@@ -6,12 +6,13 @@ use std::{
     fmt::Display,
     fs,
     io::{Error, Write},
+    ops::Deref,
     path::Path,
     sync::mpsc::{channel, SendError, Sender, TryRecvError},
     thread::{self, JoinHandle},
     time::Duration,
 };
-use tsp_instrument::instrument::Instrument;
+use tsp_instrument::instrument::{clear_output_queue, Instrument};
 pub mod breakpoint;
 pub mod variable;
 pub mod watchpoint;
@@ -332,7 +333,10 @@ impl Debugger {
             std::thread::sleep(delay_between_attempts);
             let mut buf: Vec<u8> = vec![0u8; 512];
             match self.instrument.read(&mut buf) {
-                Ok(_) => Ok(()),
+                Ok(_) => {
+                    println!("output queue is {:?} :", String::from_utf8_lossy(&buf));
+                    Ok(())
+                }
                 Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
                     std::thread::sleep(delay_between_attempts);
                     continue;
@@ -367,9 +371,9 @@ impl Debugger {
         let (user_out, loop_in) = channel();
 
         let join = Self::init_user_input(user_out)?;
-
-        self.clear_output_queue(5, Duration::from_millis(1000))?;
-
+        
+        clear_output_queue(&mut *self.instrument, 5, Duration::from_millis(100))?;
+        
         self.instrument.write_all(b"localnode.prompts = 0\n")?;
 
         Self::print_flush(&"\nTSP> ".blue())?;
@@ -440,7 +444,7 @@ impl Debugger {
                         self.stepout_debugging()?;
                     }
                     Request::Exit => {
-                        self.clear_output_queue(5, Duration::from_millis(1000))?;
+                        clear_output_queue(&mut *self.instrument, 5, Duration::from_millis(100))?;
                         break 'user_loop;
                     }
 

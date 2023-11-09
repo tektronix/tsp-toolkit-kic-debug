@@ -106,6 +106,9 @@ impl Login for Instrument {
             .trim();
 
         if resp.contains("FAILURE") {
+            if resp.contains("Logout"){
+                return Ok(instrument::State::LogoutNeeded);
+            }
             Ok(instrument::State::Needed)
         } else {
             Ok(instrument::State::NotNeeded)
