@@ -433,6 +433,9 @@ impl Debugger {
                     Request::StepOver => {
                         self.stepover_debugging()?;
                     }
+                    Request::ClearBreakPoints => {
+                        self.clear_breakpoints()?;
+                    }
                     Request::StepIn => {
                         self.stepin_debugging()?;
                     }
@@ -501,8 +504,11 @@ impl Debugger {
                             .about("exit debugger and disconnect instrument")
                             .disable_help_flag(true),
                     )
-                    .subcommand(Command::new("clearbreakpoint").about("initialize debugger"))
-                    .disable_help_flag(true)
+                    .subcommand(
+                        Command::new("clearBreakpoints")
+                            .about("clear all breakpoints")
+                            .disable_help_flag(true),
+                    )
                     .subcommand(
                         Command::new("setBreakpoint")
                             .about("set breakpoint")
@@ -600,7 +606,7 @@ impl Debugger {
                 Some(("stepIn", _)) => Ok(Request::StepIn),
                 Some(("stepOut", _)) => Ok(Request::StepOut),
                 Some(("exit", _)) => Ok(Request::Exit),
-                Some(("clearbreakpoints", _)) => Ok(Request::ClearBreakPoints),
+                Some(("clearBreakpoints", _)) => Ok(Request::ClearBreakPoints),
                 Some(("setBreakpoint", flag)) => {
                     let breakpoint_info = flag.get_one::<String>("Breakpoint"); //matches.get_one::<PathBuf>("config")
                     match breakpoint_info {
@@ -673,7 +679,7 @@ impl Debugger {
                         Some(sub) => {
                             let debug_info = sub.0;
                             let di: std::result::Result<DebugInfo, serde_json::Error> =
-                                serde_json::from_str(&debug_info); // need to do it.
+                                serde_json::from_str(debug_info); // need to do it.
 
                             match di {
                                 Ok(di) => {
