@@ -106,7 +106,7 @@ enum TrialStatus {
     Expired,
     Tampered,
     Available,
-    UNKNOWN,
+    Unknown,
 }
 struct License {
     trial_start_date: DateTime<Utc>,
@@ -117,7 +117,7 @@ impl License {
     fn new() -> Self {
         Self {
             trial_start_date: DateTime::<Utc>::MIN_UTC,
-            trial_status: TrialStatus::UNKNOWN,
+            trial_status: TrialStatus::Unknown,
         }
     }
 }
@@ -139,17 +139,12 @@ impl KeyGen {
     pub fn verify(&mut self, signature: &str, message: &str) -> bool {
         let decoded = hex::decode(signature).unwrap();
         let decoding_result = hmac::verify(&self.hw_key, message.as_bytes(), &decoded);
-        let is_decoded = match decoding_result {
-            core::result::Result::Ok(()) => true,
-            _ => false,
-        };
-        return is_decoded;
+        matches!(decoding_result, core::result::Result::Ok(()))
     }
 
     pub fn get_new_key(&mut self, msg: String) -> String {
         let sign = hmac::sign(&self.hw_key, msg.as_bytes());
-        let si = hex::encode(sign);
-        return si;
+        hex::encode(sign)
     }
 }
 struct LicenseManager {
@@ -159,8 +154,8 @@ struct LicenseManager {
 
 impl LicenseManager {
     const TRIAL_DAYS: i64 = 90;
-    const DATE_FORMAT: &str = "%d/%m/%Y %T";
-    const KEY_FILE: &str = "key.txt";
+    const DATE_FORMAT: &'static str = "%d/%m/%Y %T";
+    const KEY_FILE: &'static str = "key.txt";
 
     pub fn new() -> Self {
         Self {
@@ -175,7 +170,7 @@ impl LicenseManager {
         let _ = fs::create_dir_all(&buf);
         let p = buf.join(LicenseManager::KEY_FILE);
         let output: String = p.into_os_string().into_string().unwrap();
-        return output;
+        output
     }
 
     pub fn init_license(&mut self) {
@@ -186,7 +181,7 @@ impl LicenseManager {
         }
         let file_line = self.read_file_line(key_file);
         if !file_line.is_empty() {
-            let clumps: Vec<&str> = file_line.split(",").collect();
+            let clumps: Vec<&str> = file_line.split(',').collect();
             if clumps.len() != 3 {
                 self.trial_license = License {
                     trial_start_date: Utc::now(),
@@ -236,8 +231,7 @@ impl LicenseManager {
 
     fn get_date(&self, literal: &str) -> DateTime<Utc> {
         let naive_time = NaiveDateTime::parse_from_str(literal, "%d/%m/%Y %H:%M:%S");
-        let utc_time = naive_time.unwrap().and_utc();
-        return utc_time;
+        naive_time.unwrap().and_utc()
     }
 
     fn read_file_line(&mut self, filename: String) -> String {
@@ -250,7 +244,7 @@ impl LicenseManager {
                 if first_line.is_empty() {
                     first_line = "\n".to_string();
                 }
-                return first_line;
+                first_line
             }
             Err(_) => String::new(),
         }
@@ -265,14 +259,14 @@ impl LicenseManager {
                 println!("Trial is available!");
                 is_active = true
             }
-            TrialStatus::UNKNOWN => println!("Trial is not registered!"),
+            TrialStatus::Unknown => println!("Trial is not registered!"),
         }
-        return is_active;
+        is_active
     }
 
     pub fn register(&mut self) {
         match self.trial_license.trial_status {
-            TrialStatus::UNKNOWN => {
+            TrialStatus::Unknown => {
                 //Register new trial
                 let current_time = Utc::now();
                 self.trial_license = License {

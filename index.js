@@ -11,15 +11,9 @@ const EXTENSION = (() =>{
 
 const PATH = path.join(__dirname, "bin")
 
-const NAME = `kic${EXTENSION}`
-const EXECUTABLE = path.join(PATH, NAME)
-
-const DISC_NAME = `kic-discover${EXTENSION}`
-const DISC_EXECUTABLE = path.join(PATH, DISC_NAME)
+const DEBUG_NAME = `kic-debug${EXTENSION}`
+const DEBUG_EXECUTABLE = path.join(PATH, DEBUG_NAME)
 
 module.exports = {
-    NAME,
-    PATH,
-    EXECUTABLE,
-    DISC_EXECUTABLE
+    DEBUG_EXECUTABLE
 }
