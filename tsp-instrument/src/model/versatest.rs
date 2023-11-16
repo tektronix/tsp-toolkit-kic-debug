@@ -62,7 +62,7 @@ impl Login for Instrument {
             .trim();
 
         if resp.contains("FAILURE") {
-            if resp.contains("LOGOUT"){
+            if resp.contains("LOGOUT") {
                 return Ok(instrument::State::LogoutNeeded);
             }
             Ok(instrument::State::Needed)
@@ -993,5 +993,6 @@ mod unit {
         impl NonBlock for Interface {
             fn set_nonblocking(&mut self, enable: bool) -> crate::error::Result<()>;
         }
+        impl Info for Interface {}
     }
 }

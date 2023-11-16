@@ -9,7 +9,10 @@ use std::{
     time::Duration,
 };
 
-use crate::error::{InstrumentError, Result};
+use crate::{
+    error::{InstrumentError, Result},
+    instrument::{info::InstrumentInfo, Info},
+};
 
 use crate::interface::{Interface, NonBlock};
 
@@ -20,6 +23,7 @@ pub struct AsyncStream {
     read_from: Rc<Receiver<Vec<u8>>>,
     buffer: Vec<u8>,
     nonblocking: bool,
+    instrument_info: Option<InstrumentInfo>,
 }
 
 impl TryFrom<Arc<dyn Interface + Send + Sync>> for AsyncStream {
@@ -32,8 +36,9 @@ impl TryFrom<Arc<dyn Interface + Send + Sync>> for AsyncStream {
         let (write_out, read_from) = mpsc::channel();
         let builder =
             std::thread::Builder::new().name("Instrument Communication Thread".to_string());
+        let inst = Arc::get_mut(&mut socket).unwrap().info()?;
         //TODO: Populate name with instrument information
-
+        // get INstrumentInfo by call get_info of interface
         let join = builder.spawn(move || -> Result<Arc<dyn Interface + Send + Sync>> {
             Arc::get_mut(&mut socket).unwrap().set_nonblocking(true)?;
             let read_into: Receiver<Vec<u8>> = read_into;
@@ -85,6 +90,7 @@ impl TryFrom<Arc<dyn Interface + Send + Sync>> for AsyncStream {
             read_from: Rc::new(read_from),
             buffer: Vec::new(),
             nonblocking: true,
+            instrument_info: Some(inst),
         })
     }
 }
@@ -150,6 +156,16 @@ impl NonBlock for AsyncStream {
     fn set_nonblocking(&mut self, nonblocking: bool) -> Result<()> {
         self.nonblocking = nonblocking;
         Ok(())
+    }
+}
+
+impl Info for AsyncStream {
+    fn info(&mut self) -> Result<InstrumentInfo> {
+        self.instrument_info
+            .clone()
+            .ok_or(InstrumentError::InformationRetrievalError {
+                details: "InstrumentInfo is not available within AsyncStream.".to_string(),
+            })
     }
 }
 

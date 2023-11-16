@@ -73,7 +73,10 @@ impl Login for Instrument {
 
         let mut resp: Vec<u8> = vec![0; 256];
         let _read = self.read(&mut resp)?;
-        println!("resp in check_login is {:?}", String::from_utf8_lossy(&resp));
+        println!(
+            "resp in check_login is {:?}",
+            String::from_utf8_lossy(&resp)
+        );
 
         let resp = std::str::from_utf8(resp.as_slice())
             .unwrap_or("")
@@ -81,7 +84,7 @@ impl Login for Instrument {
             .trim();
 
         if resp.contains("FAILURE") {
-            if resp.contains("LOGOUT"){
+            if resp.contains("LOGOUT") {
                 return Ok(instrument::State::LogoutNeeded);
             }
             Ok(instrument::State::Needed)
@@ -969,5 +972,7 @@ mod unit {
         impl NonBlock for Interface {
             fn set_nonblocking(&mut self, enable: bool) -> crate::error::Result<()>;
         }
+
+        impl Info for Interface {}
     }
 }

@@ -1,13 +1,10 @@
-use anyhow::Error;
 use clap::{arg, command, Args, Command, FromArgMatches, Parser, Subcommand};
 use kic_debug::debugger::Debugger;
-use kic_debug::error::DebugError;
-use std::error::Error;
 use std::ffi::OsString;
 use std::fs;
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4, TcpStream};
 use std::sync::Arc;
-use tsp_instrument::instrument::{Instrument, clear_output_queue, State};
+use tsp_instrument::instrument::Instrument;
 use tsp_instrument::interface::async_stream::AsyncStream;
 use tsp_instrument::Interface;
 
@@ -95,27 +92,7 @@ fn main() -> anyhow::Result<()> {
             let socket_addr = SocketAddr::V4(SocketAddrV4::new(addr, port));
             let lan: Arc<dyn Interface + Send + Sync> = Arc::new(TcpStream::connect(socket_addr)?);
             let lan: Box<dyn Interface> = Box::new(AsyncStream::try_from(lan)?);
-            let mut instrument: Box<dyn Instrument> = lan.try_into()?;
-            let login_res = instrument.check_login();
-
-            match login_res {
-                Ok(state) => match state {
-                    State::Needed => {
-                        println!("Enter password to login: \n");
-                        let mut input = String::new();
-                        let _ = std::io::stdin().read_line(&mut input)?;
-                        instrument.login(input.as_bytes())?;
-                    }
-                    State::LogoutNeeded => {
-                        println!("error msg");
-                    }
-                    State::NotNeeded => (),
-                },
-                Err(e) => {
-                    return Err(Error::new(e));
-
-                }
-            }
+            let instrument: Box<dyn Instrument> = lan.try_into()?;
 
             Debugger::new(instrument)
         }

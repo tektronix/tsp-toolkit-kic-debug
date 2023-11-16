@@ -1,16 +1,19 @@
+use crate::{
+    error::Result,
+    instrument::{info::InstrumentInfo, Info},
+    InstrumentError,
+};
 use std::{
     io::{Read, Write},
     net::TcpStream,
 };
-
-use crate::error::Result;
 
 pub mod async_stream;
 pub mod connection_addr;
 pub mod usbtmc;
 
 /// Defines a marker trait that we will implement on each device interface
-pub trait Interface: NonBlock + Read + Write {}
+pub trait Interface: NonBlock + Read + Write + Info {}
 
 /// This device can be set to be non-blocking. This is a requirement of an Interface
 pub trait NonBlock {
@@ -25,6 +28,28 @@ pub trait NonBlock {
 impl NonBlock for TcpStream {
     fn set_nonblocking(&mut self, enable: bool) -> crate::error::Result<()> {
         Ok(Self::set_nonblocking(self, enable)?)
+    }
+}
+
+impl Info for TcpStream {
+    // write all methods for Info trait here
+    fn info(&mut self) -> Result<InstrumentInfo> {
+        let ip_addr = self.peer_addr();
+        if let Ok(ip_addr) = ip_addr {
+            let ip_addr = ip_addr.ip();
+            let uri = format!("http://{ip_addr}/lxi/identification");
+            let resp = reqwest::blocking::get(&uri);
+            if let Ok(response) = resp {
+                if let Ok(txt) = response.text() {
+                    let info = InstrumentInfo::try_from(&txt)?;
+                    return Ok(info);
+                }
+            }
+        }
+        
+        Err(InstrumentError::InformationRetrievalError {
+            details: "unable to read instrument info from LXI page".to_string(),
+        })
     }
 }
 

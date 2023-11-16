@@ -6,7 +6,6 @@ use std::{
     fmt::Display,
     fs,
     io::{Error, Write},
-    ops::Deref,
     path::Path,
     sync::mpsc::{channel, SendError, Sender, TryRecvError},
     thread::{self, JoinHandle},
@@ -371,9 +370,9 @@ impl Debugger {
         let (user_out, loop_in) = channel();
 
         let join = Self::init_user_input(user_out)?;
-        
+
         clear_output_queue(&mut *self.instrument, 5, Duration::from_millis(100))?;
-        
+
         self.instrument.write_all(b"localnode.prompts = 0\n")?;
 
         Self::print_flush(&"\nTSP> ".blue())?;
@@ -720,9 +719,10 @@ mod debugger_test {
     use mockall::{mock, Sequence};
     use std::io::Read;
     use std::io::Write;
+    use tsp_instrument::instrument::Info;
     use tsp_instrument::interface;
     use tsp_instrument::interface::NonBlock;
-    use tsp_instrument::ki2600;
+    use tsp_instrument::model::ki2600;
 
     // use tsp_instrument::device_interface::Interface::MockInterface;
     #[test]
@@ -1797,5 +1797,7 @@ mod debugger_test {
        impl NonBlock for Interface {
            fn set_nonblocking(&mut self, enable: bool) -> Result<(), tsp_instrument::InstrumentError>;
        }
+
+       impl Info for Interface {}
     }
 }
