@@ -1,4 +1,4 @@
-use crate::{InstrumentError, Interface, instrument::Instrument};
+use crate::{instrument::Instrument, InstrumentError, Interface};
 
 pub mod ki2600;
 pub mod tti;

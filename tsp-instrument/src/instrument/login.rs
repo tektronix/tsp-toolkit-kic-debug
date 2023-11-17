@@ -11,7 +11,7 @@ pub enum State {
     /// instrument is not password protected OR the instrument is already unlocked for
     /// this client.
     NotNeeded,
-    /// The instrument requiers to be logged out first before it can be logged in again.
+    /// The instrument requiers to be logged out from another interface first before it can be logged in.
     LogoutNeeded,
 }
 
@@ -73,7 +73,7 @@ pub trait Login {
     /// # Returns
     /// - [`State::Needed`]: A login is necessary, therefore [`Login::login`] should be called.
     /// - [`State::NotNeeded`]: A login is not necessary. Proceed with connection.
-    /// - [`State::LogoutNeeded`]: A logout is necessary before a login can be performed.
+    /// - [`State::LogoutNeeded`]:Logout from another interface is necessary before a login can be performed.
     ///
     /// # Default `impl`
     /// The default implementation will always return [`State::NotNeeded`] and should

@@ -73,11 +73,7 @@ impl Login for Instrument {
 
         let mut resp: Vec<u8> = vec![0; 256];
         let _read = self.read(&mut resp)?;
-        println!(
-            "resp in check_login is {:?}",
-            String::from_utf8_lossy(&resp)
-        );
-
+        
         let resp = std::str::from_utf8(resp.as_slice())
             .unwrap_or("")
             .trim_matches(char::from(0))
@@ -161,6 +157,8 @@ impl NonBlock for Instrument {
 
 impl Drop for Instrument {
     fn drop(&mut self) {
+        let _ = self.write_all(b"logout\n");
+        std::thread::sleep(Duration::from_millis(1000));
         let _ = self.write_all(b"abort\n");
     }
 }
@@ -242,6 +240,11 @@ mod unit {
                 }
                 Ok(msg.len())
             });
+        interface
+            .expect_write()
+            .times(..)
+            .withf(|buf: &[u8]| buf == b"logout\n")
+            .returning(|buf: &[u8]| Ok(buf.len()));
         interface
             .expect_write()
             .times(..)
@@ -368,6 +371,12 @@ mod unit {
                 }
                 Ok(msg.len())
             });
+
+        interface
+            .expect_write()
+            .times(..)
+            .withf(|buf: &[u8]| buf == b"logout\n")
+            .returning(|buf: &[u8]| Ok(buf.len()));
 
         interface
             .expect_write()
@@ -501,6 +510,12 @@ mod unit {
         interface
             .expect_write()
             .times(..)
+            .withf(|buf: &[u8]| buf == b"logout\n")
+            .returning(|buf: &[u8]| Ok(buf.len()));
+
+        interface
+            .expect_write()
+            .times(..)
             .withf(|buf: &[u8]| buf == b"abort\n")
             .returning(|buf: &[u8]| Ok(buf.len()));
         let mut instrument: Instrument = Instrument::new(Box::new(interface));
@@ -550,6 +565,12 @@ mod unit {
                 }
                 Ok(msg.len())
             });
+
+        interface
+            .expect_write()
+            .times(..)
+            .withf(|buf: &[u8]| buf == b"logout\n")
+            .returning(|buf: &[u8]| Ok(buf.len()));
 
         interface
             .expect_write()
@@ -606,6 +627,11 @@ mod unit {
         interface
             .expect_write()
             .times(..)
+            .withf(|buf: &[u8]| buf == b"logout\n")
+            .returning(|buf: &[u8]| Ok(buf.len()));
+        interface
+            .expect_write()
+            .times(..)
             .withf(|buf: &[u8]| buf == b"abort\n")
             .returning(|buf: &[u8]| Ok(buf.len()));
         let mut instrument: Instrument = Instrument::new(Box::new(interface));
@@ -648,6 +674,11 @@ mod unit {
         interface
             .expect_write()
             .times(..)
+            .withf(|buf: &[u8]| buf == b"logout\n")
+            .returning(|buf: &[u8]| Ok(buf.len()));
+        interface
+            .expect_write()
+            .times(..)
             .withf(|buf: &[u8]| buf == b"abort\n")
             .returning(|buf: &[u8]| Ok(buf.len()));
         let mut instrument: Instrument = Instrument::new(Box::new(interface));
@@ -680,6 +711,12 @@ mod unit {
         interface
             .expect_write()
             .times(..)
+            .withf(|buf: &[u8]| buf == b"logout\n")
+            .returning(|buf: &[u8]| Ok(buf.len()));
+
+        interface
+            .expect_write()
+            .times(..)
             .withf(|buf: &[u8]| buf == b"abort\n")
             .returning(|buf: &[u8]| Ok(buf.len()));
 
@@ -697,6 +734,7 @@ mod unit {
     #[test]
     fn write_script() {
         let optional_writes: Vec<Vec<u8>> = vec![
+            (*b"logout\n").into(),
             (*b"abort\n").into(),
             (*b"_orig_prompts = localnode.prompts localnode.prompts = 0\n").into(),
             (*b"localnode.prompts = _orig_prompts _orig_prompts = nil\n").into(),
@@ -742,6 +780,7 @@ mod unit {
     #[test]
     fn write_script_run() {
         let optional_writes: Vec<Vec<u8>> = vec![
+            (*b"logout\n").into(),
             (*b"abort\n").into(),
             (*b"_orig_prompts = localnode.prompts localnode.prompts = 0\n").into(),
             (*b"localnode.prompts = _orig_prompts _orig_prompts = nil\n").into(),
@@ -788,6 +827,7 @@ mod unit {
     #[test]
     fn write_script_save() {
         let optional_writes: Vec<Vec<u8>> = vec![
+            (*b"logout\n").into(),
             (*b"abort\n").into(),
             (*b"_orig_prompts = localnode.prompts localnode.prompts = 0\n").into(),
             (*b"localnode.prompts = _orig_prompts _orig_prompts = nil\n").into(),
@@ -835,6 +875,7 @@ mod unit {
     #[test]
     fn write_script_save_run() {
         let optional_writes: Vec<Vec<u8>> = vec![
+            (*b"logout\n").into(),
             (*b"abort\n").into(),
             (*b"_orig_prompts = localnode.prompts localnode.prompts = 0\n").into(),
             (*b"localnode.prompts = _orig_prompts _orig_prompts = nil\n").into(),
@@ -938,6 +979,11 @@ mod unit {
             .times(1)
             .in_sequence(&mut seq)
             .withf(|buf: &[u8]| buf == b"endflash\n")
+            .returning(|buf: &[u8]| Ok(buf.len()));
+        interface
+            .expect_write()
+            .times(..)
+            .withf(|buf: &[u8]| buf == b"logout\n")
             .returning(|buf: &[u8]| Ok(buf.len()));
         interface
             .expect_write()

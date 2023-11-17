@@ -164,7 +164,7 @@ impl Info for AsyncStream {
         self.instrument_info
             .clone()
             .ok_or(InstrumentError::InformationRetrievalError {
-                details: "InstrumentInfo is not available within AsyncStream.".to_string(),
+                details: "InstrumentInfo is not available in AsyncStream.".to_string(),
             })
     }
 }

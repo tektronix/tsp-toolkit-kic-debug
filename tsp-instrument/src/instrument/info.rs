@@ -1,21 +1,4 @@
 //! Define the trait and datatypes necessary to describe an instrument.
-
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
-pub struct LXIDevice {
-    // pub driverurl: String,
-    #[serde(rename = "Manufacturer")]
-    pub manufacturer: Option<String>,
-    #[serde(rename = "Model")]
-    pub model: Option<String>,
-    #[serde(rename = "SerialNumber")]
-    pub serial_number: Option<String>,
-    #[serde(rename = "FirmwareRevision")]
-    pub firmware_revision: Option<String>,
-    #[serde(rename = "ManufacturerDescription")]
-    pub manufacturer_description: Option<String>,
-    #[serde(rename = "IPAddress")]
-    pub ip_address: Option<String>,
-}
 use minidom::Element;
 use serde::{Deserialize, Serialize};
 
@@ -156,26 +139,6 @@ impl TryFrom<&[u8]> for InstrumentInfo {
             model,
             serial_number,
             firmware_rev,
-            address: None,
-        })
-    }
-}
-
-impl TryFrom<&LXIDevice> for InstrumentInfo {
-    type Error = InstrumentError;
-
-    fn try_from(lxi_device: &LXIDevice) -> std::result::Result<Self, Self::Error> {
-        if lxi_device.model.is_none() {
-            return Err(InstrumentError::InformationRetrievalError {
-                details: "unable to read model".to_string(),
-            });
-        }
-
-        Ok(Self {
-            vendor: lxi_device.manufacturer.clone(),
-            model: lxi_device.model.clone(),
-            serial_number: lxi_device.serial_number.clone(),
-            firmware_rev: lxi_device.firmware_revision.clone(),
             address: None,
         })
     }

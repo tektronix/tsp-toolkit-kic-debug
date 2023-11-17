@@ -46,9 +46,9 @@ impl Info for TcpStream {
                 }
             }
         }
-        
+
         Err(InstrumentError::InformationRetrievalError {
-            details: "unable to read instrument info from LXI page".to_string(),
+            details: "unable to read instrument info".to_string(),
         })
     }
 }

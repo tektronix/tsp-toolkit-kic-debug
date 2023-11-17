@@ -4,7 +4,7 @@ use std::ffi::OsString;
 use std::fs;
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4, TcpStream};
 use std::sync::Arc;
-use tsp_instrument::instrument::Instrument;
+use tsp_instrument::instrument::{Instrument, State};
 use tsp_instrument::interface::async_stream::AsyncStream;
 use tsp_instrument::Interface;
 
@@ -89,11 +89,23 @@ fn main() -> anyhow::Result<()> {
         SubCli::Lan(args) => {
             let addr: Ipv4Addr = args.ip_addr.to_str().unwrap().parse().unwrap();
             let port = args.port.unwrap_or(5025);
+            println!("Connecting to {:?}:{:?}...", addr, port);
             let socket_addr = SocketAddr::V4(SocketAddrV4::new(addr, port));
             let lan: Arc<dyn Interface + Send + Sync> = Arc::new(TcpStream::connect(socket_addr)?);
             let lan: Box<dyn Interface> = Box::new(AsyncStream::try_from(lan)?);
-            let instrument: Box<dyn Instrument> = lan.try_into()?;
-
+            let mut instrument: Box<dyn Instrument> = lan.try_into()?;
+            let check_log = instrument.check_login()?;
+            if check_log == State::Needed {
+                eprintln!("Enter the instrument password to unlock:");
+                let password = rpassword::prompt_password("")?;
+                instrument.login(password.as_bytes())?;
+                let check_log_again = instrument.check_login()?;
+                if check_log_again == State::Needed {
+                    eprintln!("Password is incorrect");
+                }
+            } else if check_log == State::LogoutNeeded {
+                println!("Another interface has control, LOGOUT on that interface.");
+            }
             Debugger::new(instrument)
         }
         SubCli::Usb(_args) => todo!(),

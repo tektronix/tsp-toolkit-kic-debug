@@ -310,52 +310,6 @@ impl Debugger {
         Ok(())
     }
 
-    /// Clear the output queue of the instrument
-    /// * `max_attempts` - A usize holds maximum number of attempts
-    /// * `delay_between_attempts` - A Duration holds delay between attempts
-    /// # Errors
-    /// This function can error if the instrument is unable to clear the output queue.
-    fn clear_output_queue(
-        &mut self,
-        max_attempts: usize,
-        delay_between_attempts: Duration,
-    ) -> Result<()> {
-        let timestamp = Utc::now().to_string();
-
-        self.instrument
-            .write_all(format!("print(\"{timestamp}\")\n").as_bytes())?;
-
-        self.instrument.set_nonblocking(true)?;
-
-        let mut accumulate = String::new();
-        for _ in 0..max_attempts {
-            std::thread::sleep(delay_between_attempts);
-            let mut buf: Vec<u8> = vec![0u8; 512];
-            match self.instrument.read(&mut buf) {
-                Ok(_) => {
-                    println!("output queue is {:?} :", String::from_utf8_lossy(&buf));
-                    Ok(())
-                }
-                Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
-                    std::thread::sleep(delay_between_attempts);
-                    continue;
-                }
-                Err(e) => Err(e),
-            }?;
-            let first_null = buf.iter().position(|&x| x == b'\0').unwrap_or(buf.len());
-            let buf = &buf[..first_null];
-            if !buf.is_empty() {
-                accumulate = format!("{accumulate}{}", String::from_utf8_lossy(buf));
-            }
-            if accumulate.contains(&timestamp) {
-                return Ok(());
-            }
-        }
-        Err(DebugError::Other(
-            "unable to clear instrument output queue".to_string(),
-        ))
-    }
-
     /// Start the Repl
     ///
     /// # Errors
