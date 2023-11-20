@@ -89,7 +89,6 @@ fn main() -> anyhow::Result<()> {
         SubCli::Lan(args) => {
             let addr: Ipv4Addr = args.ip_addr.to_str().unwrap().parse().unwrap();
             let port = args.port.unwrap_or(5025);
-            println!("Connecting to {:?}:{:?}...", addr, port);
             let socket_addr = SocketAddr::V4(SocketAddrV4::new(addr, port));
             let lan: Arc<dyn Interface + Send + Sync> = Arc::new(TcpStream::connect(socket_addr)?);
             let lan: Box<dyn Interface> = Box::new(AsyncStream::try_from(lan)?);

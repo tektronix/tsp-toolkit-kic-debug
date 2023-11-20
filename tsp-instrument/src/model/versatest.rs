@@ -55,7 +55,6 @@ impl Login for Instrument {
 
         let mut resp: Vec<u8> = vec![0; 256];
         let _read = self.read(&mut resp)?;
-
         let resp = std::str::from_utf8(resp.as_slice())
             .unwrap_or("")
             .trim_matches(char::from(0))
