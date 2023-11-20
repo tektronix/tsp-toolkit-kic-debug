@@ -1,6 +1,9 @@
 use crate::{
     error::Result,
-    instrument::{info::InstrumentInfo, Info},
+    instrument::{
+        info::{get_info, InstrumentInfo},
+        Info,
+    },
     InstrumentError,
 };
 use std::{
@@ -46,10 +49,8 @@ impl Info for TcpStream {
                 }
             }
         }
-
-        Err(InstrumentError::InformationRetrievalError {
-            details: "unable to read instrument info".to_string(),
-        })
+        // if lxi page is not available, then get info from the instrument
+        Ok(get_info(self)?)
     }
 }
 
