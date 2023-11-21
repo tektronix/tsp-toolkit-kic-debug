@@ -11,7 +11,7 @@ use std::{
 
 use crate::{
     error::{InstrumentError, Result},
-    instrument::{info::InstrumentInfo, Info},
+    instrument::{info::{InstrumentInfo, get_info}, Info},
 };
 
 use crate::interface::{Interface, NonBlock};
@@ -190,11 +190,11 @@ impl NonBlock for AsyncStream {
 
 impl Info for AsyncStream {
     fn info(&mut self) -> Result<InstrumentInfo> {
-        self.instrument_info
-            .clone()
-            .ok_or(InstrumentError::InformationRetrievalError {
-                details: "InstrumentInfo is not available in AsyncStream.".to_string(),
-            })
+        if let Some(inst_info) = self.instrument_info.clone() {
+            return Ok(inst_info);
+        }
+        
+        get_info(self)
     }
 }
 
