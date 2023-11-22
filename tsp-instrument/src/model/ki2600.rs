@@ -99,16 +99,15 @@ impl Login for Instrument {
 
         let mut resp: Vec<u8> = vec![0; 256];
         let _read = self.read(&mut resp)?;
-
         let resp = std::str::from_utf8(resp.as_slice())
             .unwrap_or("")
             .trim_matches(char::from(0))
             .trim();
 
-        if resp.contains("FAILURE") {
-            Ok(instrument::State::Needed)
-        } else {
+        if resp.contains("unlocked") {
             Ok(instrument::State::NotNeeded)
+        } else {
+            Ok(instrument::State::Needed)
         }
     }
 
@@ -164,6 +163,7 @@ impl NonBlock for Instrument {
 
 impl Drop for Instrument {
     fn drop(&mut self) {
+        let _ = self.interface.write_all(b"password\n");
         let _ = self.interface.write_all(b"abort\n");
     }
 }
@@ -976,5 +976,7 @@ mod unit {
         impl NonBlock for Interface {
             fn set_nonblocking(&mut self, enable: bool) -> crate::error::Result<()>;
         }
+
+        impl Info for Interface {}
     }
 }
