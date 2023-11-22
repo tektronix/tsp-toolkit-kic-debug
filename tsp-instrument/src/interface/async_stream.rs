@@ -11,7 +11,10 @@ use std::{
 
 use crate::{
     error::{InstrumentError, Result},
-    instrument::{info::{InstrumentInfo, get_info}, Info},
+    instrument::{
+        info::{get_info, InstrumentInfo},
+        Info,
+    },
 };
 
 use crate::interface::{Interface, NonBlock};
@@ -193,7 +196,7 @@ impl Info for AsyncStream {
         if let Some(inst_info) = self.instrument_info.clone() {
             return Ok(inst_info);
         }
-        
+
         get_info(self)
     }
 }

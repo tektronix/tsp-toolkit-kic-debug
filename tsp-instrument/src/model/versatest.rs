@@ -60,13 +60,10 @@ impl Login for Instrument {
             .trim_matches(char::from(0))
             .trim();
 
-        if resp.contains("FAILURE") {
-            if resp.contains("LOGOUT") {
-                return Ok(instrument::State::LogoutNeeded);
-            }
-            Ok(instrument::State::Needed)
-        } else {
+        if resp.contains("unlocked") {
             Ok(instrument::State::NotNeeded)
+        } else {
+            Ok(instrument::State::Needed)
         }
     }
 

@@ -98,10 +98,6 @@ fn main() -> anyhow::Result<()> {
                 eprintln!("Enter the instrument password to unlock:");
                 let password = rpassword::prompt_password("")?;
                 instrument.login(password.as_bytes())?;
-                let check_log_again = instrument.check_login()?;
-                if check_log_again == State::Needed {
-                    eprintln!("Password is incorrect");
-                }
             } else if check_log == State::LogoutNeeded {
                 println!("Another interface has control, LOGOUT on that interface.");
             }
