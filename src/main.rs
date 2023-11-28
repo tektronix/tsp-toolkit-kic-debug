@@ -4,9 +4,9 @@ use std::ffi::OsString;
 use std::fs;
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4, TcpStream};
 use std::sync::Arc;
-use tsp_instrument::instrument::{Instrument, State};
-use tsp_instrument::interface::async_stream::AsyncStream;
-use tsp_instrument::Interface;
+use tsp_toolkit_kic_lib::instrument::{Instrument, State};
+use tsp_toolkit_kic_lib::interface::async_stream::AsyncStream;
+use tsp_toolkit_kic_lib::Interface;
 
 use chrono::{DateTime, NaiveDateTime, Utc};
 use directories::UserDirs;
