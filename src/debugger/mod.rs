@@ -676,8 +676,7 @@ mod debugger_test {
     use crate::debugger::Debugger;
     pub use crate::resources::{KIDEBUGGER_TSP, TSPDBG_TSP};
     use mockall::{mock, Sequence};
-    use std::io::Read;
-    use std::io::Write;
+    use std::io::{Read, Write};
     use tsp_toolkit_kic_lib::instrument::Info;
     use tsp_toolkit_kic_lib::interface;
     use tsp_toolkit_kic_lib::interface::NonBlock;
@@ -770,6 +769,12 @@ mod debugger_test {
             .times(1)
             .in_sequence(&mut seq)
             .withf(|buf: &[u8]| buf == b"script.delete(\"kiDebugger\")\n")
+            .returning(|buf: &[u8]| Ok(buf.len()));
+
+        interface
+            .expect_write()
+            .times(..)
+            .withf(|buf: &[u8]| buf == b"password\n")
             .returning(|buf: &[u8]| Ok(buf.len()));
 
         interface
@@ -879,6 +884,12 @@ mod debugger_test {
         interface
             .expect_write()
             .times(..)
+            .withf(|buf: &[u8]| buf == b"password\n")
+            .returning(|buf: &[u8]| Ok(buf.len()));
+
+        interface
+            .expect_write()
+            .times(..)
             .withf(|buf: &[u8]| buf == b"abort\n")
             .returning(|buf: &[u8]| Ok(buf.len()));
 
@@ -983,6 +994,12 @@ mod debugger_test {
             .times(1)
             .in_sequence(&mut seq)
             .withf(|buf: &[u8]| buf == b"script.delete(\"kiDebugger\")\n")
+            .returning(|buf: &[u8]| Ok(buf.len()));
+
+        interface
+            .expect_write()
+            .times(..)
+            .withf(|buf: &[u8]| buf == b"password\n")
             .returning(|buf: &[u8]| Ok(buf.len()));
 
         interface
@@ -1335,6 +1352,12 @@ mod debugger_test {
         interface
             .expect_write()
             .times(..)
+            .withf(|buf: &[u8]| buf == b"password\n")
+            .returning(|buf: &[u8]| Ok(buf.len()));
+
+        interface
+            .expect_write()
+            .times(..)
             .withf(|buf: &[u8]| buf == b"abort\n")
             .returning(|buf: &[u8]| Ok(buf.len()));
 
@@ -1439,6 +1462,12 @@ mod debugger_test {
         interface
             .expect_write()
             .times(..)
+            .withf(|buf: &[u8]| buf == b"password\n")
+            .returning(|buf: &[u8]| Ok(buf.len()));
+
+        interface
+            .expect_write()
+            .times(..)
             .withf(|buf: &[u8]| buf == b"abort\n")
             .returning(|buf: &[u8]| Ok(buf.len()));
 
@@ -1538,6 +1567,12 @@ mod debugger_test {
             .times(1)
             .in_sequence(&mut seq)
             .withf(|buf: &[u8]| buf == b"script.delete(\"kiDebugger\")\n")
+            .returning(|buf: &[u8]| Ok(buf.len()));
+
+        interface
+            .expect_write()
+            .times(..)
+            .withf(|buf: &[u8]| buf == b"password\n")
             .returning(|buf: &[u8]| Ok(buf.len()));
 
         interface
@@ -1651,6 +1686,12 @@ mod debugger_test {
         interface
             .expect_write()
             .times(..)
+            .withf(|buf: &[u8]| buf == b"password\n")
+            .returning(|buf: &[u8]| Ok(buf.len()));
+
+        interface
+            .expect_write()
+            .times(..)
             .withf(|buf: &[u8]| buf == b"abort\n")
             .returning(|buf: &[u8]| Ok(buf.len()));
 
@@ -1720,6 +1761,12 @@ mod debugger_test {
             .times(1)
             .in_sequence(&mut seq)
             .withf(|buf: &[u8]| buf == b"script.delete(\"kiDebugger\")\n")
+            .returning(|buf: &[u8]| Ok(buf.len()));
+
+        interface
+            .expect_write()
+            .times(..)
+            .withf(|buf: &[u8]| buf == b"password\n")
             .returning(|buf: &[u8]| Ok(buf.len()));
 
         interface
