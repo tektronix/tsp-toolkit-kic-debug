@@ -1,4 +1,3 @@
-use chrono::Utc;
 use clap::{arg, command, value_parser, Command};
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
