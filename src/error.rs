@@ -10,12 +10,12 @@ pub enum DebugError {
         source: serde_json::Error,
     },
 
-    /// An error coming from `tsp_instrument`
+    /// An error coming from `tsp_toolkit_kic_lib`
     #[error("Instrument Error ocurred: {source}")]
     InstrumentError {
         #[from]
-        /// The original `tsp_instrument` error
-        source: tsp_instrument::InstrumentError,
+        /// The original `tsp_toolkit_kic_lib` error
+        source: tsp_toolkit_kic_lib::InstrumentError,
     },
 
     /// An IO error occurred

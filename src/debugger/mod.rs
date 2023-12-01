@@ -1,4 +1,3 @@
-use chrono::Utc;
 use clap::{arg, command, value_parser, Command};
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
@@ -11,7 +10,7 @@ use std::{
     thread::{self, JoinHandle},
     time::Duration,
 };
-use tsp_instrument::instrument::{clear_output_queue, Instrument};
+use tsp_toolkit_kic_lib::instrument::{clear_output_queue, Instrument};
 pub mod breakpoint;
 pub mod variable;
 pub mod watchpoint;
@@ -679,12 +678,12 @@ mod debugger_test {
     use mockall::{mock, Sequence};
     use std::io::Read;
     use std::io::Write;
-    use tsp_instrument::instrument::Info;
-    use tsp_instrument::interface;
-    use tsp_instrument::interface::NonBlock;
-    use tsp_instrument::model::ki2600;
+    use tsp_toolkit_kic_lib::instrument::Info;
+    use tsp_toolkit_kic_lib::interface;
+    use tsp_toolkit_kic_lib::interface::NonBlock;
+    use tsp_toolkit_kic_lib::model::ki2600;
 
-    // use tsp_instrument::device_interface::Interface::MockInterface;
+    // use tsp_toolkit_kic_lib::device_interface::Interface::MockInterface;
     #[test]
     fn test_new() {
         let mut interface = MockInterface::new();
@@ -1755,7 +1754,7 @@ mod debugger_test {
        }
 
        impl NonBlock for Interface {
-           fn set_nonblocking(&mut self, enable: bool) -> Result<(), tsp_instrument::InstrumentError>;
+           fn set_nonblocking(&mut self, enable: bool) -> Result<(), tsp_toolkit_kic_lib::InstrumentError>;
        }
 
        impl Info for Interface {}
