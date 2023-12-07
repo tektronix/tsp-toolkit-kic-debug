@@ -4,7 +4,7 @@ use std::ffi::OsString;
 use std::fs;
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4, TcpStream};
 use std::sync::Arc;
-use tsp_toolkit_kic_lib::instrument::{Instrument, State};
+use tsp_toolkit_kic_lib::instrument::Instrument;
 use tsp_toolkit_kic_lib::interface::async_stream::AsyncStream;
 use tsp_toolkit_kic_lib::Interface;
 
@@ -93,14 +93,7 @@ fn main() -> anyhow::Result<()> {
             let lan: Arc<dyn Interface + Send + Sync> = Arc::new(TcpStream::connect(socket_addr)?);
             let lan: Box<dyn Interface> = Box::new(AsyncStream::try_from(lan)?);
             let mut instrument: Box<dyn Instrument> = lan.try_into()?;
-            let check_log = instrument.check_login()?;
-            if check_log == State::Needed {
-                eprintln!("Enter the instrument password to unlock:");
-                let password = rpassword::prompt_password("")?;
-                instrument.login(password.as_bytes())?;
-            } else if check_log == State::LogoutNeeded {
-                println!("Another interface has control, LOGOUT on that interface.");
-            }
+            instrument.login()?;
             Debugger::new(instrument)
         }
         SubCli::Usb(_args) => todo!(),
