@@ -677,6 +677,7 @@ mod debugger_test {
     pub use crate::resources::{KIDEBUGGER_TSP, TSPDBG_TSP};
     use mockall::{mock, Sequence};
     use std::io::{Read, Write};
+    use tsp_toolkit_kic_lib::instrument::authenticate::Authentication;
     use tsp_toolkit_kic_lib::instrument::Info;
     use tsp_toolkit_kic_lib::interface;
     use tsp_toolkit_kic_lib::interface::NonBlock;
@@ -686,6 +687,7 @@ mod debugger_test {
     #[test]
     fn test_new() {
         let mut interface = MockInterface::new();
+        let auth = MockAuthenticate::new();
         let mut seq = Sequence::new();
 
         interface
@@ -783,7 +785,7 @@ mod debugger_test {
             .withf(|buf: &[u8]| buf == b"abort\n")
             .returning(|buf: &[u8]| Ok(buf.len()));
 
-        let instrument = ki2600::Instrument::new(Box::new(interface));
+        let instrument = ki2600::Instrument::new(Box::new(interface), Box::new(auth));
         let debugger = Debugger::new(Box::new(instrument));
         assert_eq!(debugger.debuggee_file_name, None);
     }
@@ -791,6 +793,7 @@ mod debugger_test {
     #[test]
     fn test_set_breakpoint() {
         let mut interface = MockInterface::new();
+        let auth = MockAuthenticate::new();
         let mut seq = Sequence::new();
         interface
             .expect_write()
@@ -893,7 +896,7 @@ mod debugger_test {
             .withf(|buf: &[u8]| buf == b"abort\n")
             .returning(|buf: &[u8]| Ok(buf.len()));
 
-        let instrument = ki2600::Instrument::new(Box::new(interface));
+        let instrument = ki2600::Instrument::new(Box::new(interface), Box::new(auth));
         let mut debugger = Debugger::new(Box::new(instrument));
         let breakpoint = Breakpoint {
             line_number: 10,
@@ -906,6 +909,7 @@ mod debugger_test {
     #[test]
     fn test_clear_breakpoints() {
         let mut interface = MockInterface::new();
+        let auth = MockAuthenticate::new();
         let mut seq = Sequence::new();
         interface
             .expect_write()
@@ -1008,7 +1012,7 @@ mod debugger_test {
             .withf(|buf: &[u8]| buf == b"abort\n")
             .returning(|buf: &[u8]| Ok(buf.len()));
 
-        let instrument = ki2600::Instrument::new(Box::new(interface));
+        let instrument = ki2600::Instrument::new(Box::new(interface), Box::new(auth));
         let mut debugger = Debugger::new(Box::new(instrument));
 
         debugger.clear_breakpoints().unwrap();
@@ -1017,6 +1021,7 @@ mod debugger_test {
     // #[test]
     fn test_start_debugger() {
         let mut interface = MockInterface::new();
+        let auth = MockAuthenticate::new();
         let mut seq = Sequence::new();
         let resource = KIDEBUGGER_TSP.decrypt().unwrap();
         // kiDebugger=nil
@@ -1123,7 +1128,7 @@ mod debugger_test {
                     .returning(|buf: &[u8]| Ok(buf.len()));
 
         // connect.expect_write().times(1).returning(|buf: &[u8]| Ok(buf.len()));
-        let instrument = ki2600::Instrument::new(Box::new(interface));
+        let instrument = ki2600::Instrument::new(Box::new(interface), Box::new(auth));
         let mut debugger = Debugger::new(Box::new(instrument));
         let file_content = "line1\nline2\nline3";
         let input = "{\"FileName\":\"callStacks.tsp\",\"BreakPoints\":[{\"LineNumber\":34,\"Enable\":true,\"Condition\":\"\"},{\"LineNumber\":17,\"Enable\":true,\"Condition\":\"\"}]}";
@@ -1140,6 +1145,7 @@ mod debugger_test {
     // #[test]
     fn test_start_debugger_error() {
         let mut interface = MockInterface::new();
+        let auth = MockAuthenticate::new();
         let mut seq = Sequence::new();
         let resource = KIDEBUGGER_TSP.decrypt().unwrap();
         // kiDebugger=nil
@@ -1242,7 +1248,7 @@ mod debugger_test {
             .returning(|buf: &[u8]| Ok(buf.len()));
 
         // connect.expect_write().times(1).returning(|buf: &[u8]| Ok(buf.len()));
-        let instrument = ki2600::Instrument::new(Box::new(interface));
+        let instrument = ki2600::Instrument::new(Box::new(interface), Box::new(auth));
         let mut debugger = Debugger::new(Box::new(instrument));
         let file_content = "line1\nline2\nline3";
         let input = "{\"FileName\":\"callStacks.tsp\",\"BreakPoints\":[{\"LineNumber\":34,\"Enable\":true,\"Condition\":\"\"},{\"LineNumber\":17,\"Enable\":true,\"Condition\":\"\"}]}";
@@ -1259,6 +1265,7 @@ mod debugger_test {
     #[test]
     fn test_continue_debugging() {
         let mut interface = MockInterface::new();
+        let auth = MockAuthenticate::new();
         let mut seq = Sequence::new();
         interface
             .expect_write()
@@ -1361,7 +1368,7 @@ mod debugger_test {
             .withf(|buf: &[u8]| buf == b"abort\n")
             .returning(|buf: &[u8]| Ok(buf.len()));
 
-        let instrument = ki2600::Instrument::new(Box::new(interface));
+        let instrument = ki2600::Instrument::new(Box::new(interface), Box::new(auth));
         let mut debugger = Debugger::new(Box::new(instrument));
         debugger.continue_debugging().unwrap();
     }
@@ -1369,6 +1376,7 @@ mod debugger_test {
     #[test]
     fn test_stepin_debugging() {
         let mut interface = MockInterface::new();
+        let auth = MockAuthenticate::new();
         let mut seq = Sequence::new();
         interface
             .expect_write()
@@ -1471,7 +1479,7 @@ mod debugger_test {
             .withf(|buf: &[u8]| buf == b"abort\n")
             .returning(|buf: &[u8]| Ok(buf.len()));
 
-        let instrument = ki2600::Instrument::new(Box::new(interface));
+        let instrument = ki2600::Instrument::new(Box::new(interface), Box::new(auth));
         let mut debugger = Debugger::new(Box::new(instrument));
         debugger.stepin_debugging().unwrap();
     }
@@ -1479,6 +1487,7 @@ mod debugger_test {
     #[test]
     fn test_stepout_debugging() {
         let mut interface = MockInterface::new();
+        let auth = MockAuthenticate::new();
         let mut seq = Sequence::new();
         interface
             .expect_write()
@@ -1583,7 +1592,7 @@ mod debugger_test {
 
         // let (interface, _) = test_exit(interface, seq);
 
-        let instrument = ki2600::Instrument::new(Box::new(interface));
+        let instrument = ki2600::Instrument::new(Box::new(interface), Box::new(auth));
         {
             let mut debugger = Debugger::new(Box::new(instrument));
             debugger.stepout_debugging().unwrap();
@@ -1593,6 +1602,7 @@ mod debugger_test {
     #[test]
     fn test_stepover_debugging() {
         let mut interface = MockInterface::new();
+        let auth = MockAuthenticate::new();
         let mut seq = Sequence::new();
         interface
             .expect_write()
@@ -1695,7 +1705,7 @@ mod debugger_test {
             .withf(|buf: &[u8]| buf == b"abort\n")
             .returning(|buf: &[u8]| Ok(buf.len()));
 
-        let instrument = ki2600::Instrument::new(Box::new(interface));
+        let instrument = ki2600::Instrument::new(Box::new(interface), Box::new(auth));
         let mut debugger = Debugger::new(Box::new(instrument));
         debugger.stepover_debugging().unwrap();
     }
@@ -1703,6 +1713,7 @@ mod debugger_test {
     #[test]
     fn test_exit_debugger() {
         let mut interface = MockInterface::new();
+        let auth = MockAuthenticate::new();
         let debug_file_name = Some(String::from("kic_test_file"));
         let test_file_name = debug_file_name.clone();
         let mut seq = Sequence::new();
@@ -1775,7 +1786,7 @@ mod debugger_test {
             .withf(|buf: &[u8]| buf == b"abort\n")
             .returning(|buf: &[u8]| Ok(buf.len()));
 
-        let instrument = ki2600::Instrument::new(Box::new(interface));
+        let instrument = ki2600::Instrument::new(Box::new(interface), Box::new(auth));
         // debugger gets dropped when goes out of scope.
         {
             let mut debugger = Debugger::new(Box::new(instrument));
@@ -1805,5 +1816,15 @@ mod debugger_test {
        }
 
        impl Info for Interface {}
+    }
+
+    mock! {
+
+        Authenticate {}
+
+        impl Authentication for Authenticate {
+            fn prompt_password(&self, prompt: &str) -> std::io::Result<String>;
+        }
+
     }
 }

@@ -16,14 +16,23 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
     Security -- in case of vulnerabilities.
 -->
 
+
 ## [Unreleased]
+
+## [0.12.1]
+
+### Changed
+- Modification in calling Instrument login feature.
+
 
 ## [0.11.2]
 
 ### Added
 - Debugger is implemented
-
 <!--Version Comparison Links-->
-[Unreleased]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/compare/v0.11.2...HEAD
-
+[Unreleased]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/compare/v0.12.1...HEAD
+<!--Version Comparison Links-->
+[0.12.1]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/compare/v0.11.2...v0.12.1
+[0.12.1]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.12.1
 [0.11.2]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.11.2
+
