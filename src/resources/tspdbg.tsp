@@ -361,6 +361,7 @@ tspdbg.excludeGlobal = {
     ["findTSPLinkInstr"] = true,
     ["clearTimer"] = true,
     ["check_digio_plug"] = true,
+    [".orig_prompts"] = true,
 }
 
 local function deleteScript(funcinfo, defaultname)
@@ -752,7 +753,7 @@ function tspdbg:sendglobals(level, nested, omitfunction)
     end
     local success, info = pcall(function() return debug.getinfo(level + 7); end);
     if success then
-        function printGlobals() 
+        local function printGlobals() 
             if (not (omitfunction)) then
                 self:print("    <function name='" ..
                 self:escape(tostring(info.name)) ..

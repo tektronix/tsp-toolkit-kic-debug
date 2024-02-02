@@ -17,7 +17,11 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 -->
 
 
-## [Unreleased]
+## [0.13.0]
+
+### Fixed
+- Varaible pane showing debugger script's varaibles and functions (TSP-489)
+- Fixed issue with fatal error in TTI instruments if a script name is too long (TSP-415)
 
 ## [0.12.1]
 
@@ -30,9 +34,9 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Added
 - Debugger is implemented
 <!--Version Comparison Links-->
-[Unreleased]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/compare/v0.12.1...HEAD
+[Unreleased]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/compare/v0.13.0...HEAD
 <!--Version Comparison Links-->
-[0.12.1]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/compare/v0.11.2...v0.12.1
+[0.13.0]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.13.0
 [0.12.1]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.12.1
 [0.11.2]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.11.2
 

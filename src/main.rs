@@ -4,7 +4,7 @@ use std::ffi::OsString;
 use std::fs;
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4, TcpStream};
 use std::sync::Arc;
-use tsp_toolkit_kic_lib::instrument::Instrument;
+use tsp_toolkit_kic_lib::instrument::{Instrument, State};
 use tsp_toolkit_kic_lib::interface::async_stream::AsyncStream;
 use tsp_toolkit_kic_lib::Interface;
 
@@ -93,7 +93,14 @@ fn main() -> anyhow::Result<()> {
             let lan: Arc<dyn Interface + Send + Sync> = Arc::new(TcpStream::connect(socket_addr)?);
             let lan: Box<dyn Interface> = Box::new(AsyncStream::try_from(lan)?);
             let mut instrument: Box<dyn Instrument> = lan.try_into()?;
-            instrument.login()?;
+            //FIXME: This code will automatically exit if the instrument requires a login.
+            //       If/when the debugger extension supports login, this should be removed.
+            let inst_login_state = instrument.check_login()?;
+            if State::NotNeeded != inst_login_state {
+                println!("Instrument is password protected or is unable to respond");
+                return Ok(());
+            }
+
             Debugger::new(instrument)
         }
         SubCli::Usb(_args) => todo!(),

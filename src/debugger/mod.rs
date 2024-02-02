@@ -1823,7 +1823,7 @@ mod debugger_test {
         Authenticate {}
 
         impl Authentication for Authenticate {
-            fn prompt_password(&self, prompt: &str) -> std::io::Result<String>;
+            fn read_password(&self) -> std::io::Result<String>;
         }
 
     }
