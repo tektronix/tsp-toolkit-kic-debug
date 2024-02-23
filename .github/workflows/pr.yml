@@ -359,4 +359,3 @@ jobs:
           commit: ${{steps.lasttag.outputs.commit}}
           makeLatest: true
           tag: ${{steps.lasttag.outputs.version}}
-

@@ -1,7 +1,7 @@
 [package]
 name = "kic-debug"
 description = "A full-featured debugger that runs on an instrument."
-version = "0.13.0"
+version = "0.13.2"
 authors = ["Keithley Instruments, LLC"]
 edition = "2021"
 repository = "https://github.com/TEK-Engineering/tsp-toolkit-kic-debug"
@@ -32,7 +32,7 @@ serde_json = "1.0.93"
 thiserror = "1.0.38"
 tracing = { version = "0.1", features = ["async-await"] }
 tracing-subscriber = "0.3.16"
-tsp-toolkit-kic-lib = { git = "https://github.com/TEK-Engineering/tsp-toolkit-kic-lib.git", tag = "v0.13.0"}
+tsp-toolkit-kic-lib = { git = "https://github.com/TEK-Engineering/tsp-toolkit-kic-lib.git", tag = "v0.13.2"}
 mockall = { version = "0.11.4", features = ["nightly"] }
 regex = "1.9.1"
 machineid-rs = "^1.2.4"
