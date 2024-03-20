@@ -10,6 +10,17 @@ pub enum DebugError {
         source: serde_json::Error,
     },
 
+    /// The Debugger license is not accepted.
+    #[error("Licensing error occurred: {reason}")]
+    DebugLicenseRejection {
+        /// The reason the license was rejected
+        reason: String,
+    },
+
+    /// Instrument Password Protected error
+    #[error("Instrument is password protected or is unable to respond.")]
+    InstrumentPasswordProtected,
+
     /// An error coming from `tsp_toolkit_kic_lib`
     #[error("Instrument Error ocurred: {source}")]
     InstrumentError {

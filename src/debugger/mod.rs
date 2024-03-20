@@ -95,6 +95,8 @@ impl Debugger {
         breakpoints: Vec<Breakpoint>,
     ) -> Result<()> {
         self.load_debugger_files()?;
+        self.clear_debugger_file_sources()?;
+
         self.clear_breakpoints()?;
 
         for item in breakpoints {
@@ -140,6 +142,12 @@ impl Debugger {
             false,
             true,
         )?;
+        Ok(())
+    }
+
+    fn clear_debugger_file_sources(&mut self) -> Result<()> {
+        self.instrument
+            .write_all(b"getmetatable(kiDebugger).Objects.source = nil\n")?;
         Ok(())
     }
 

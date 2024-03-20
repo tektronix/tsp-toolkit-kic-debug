@@ -37,6 +37,7 @@ local kiStackTraceStepOver = ""
 local kiStackTraceStepOut = ""
 local kiRunOnExit;
 local tspdbg = _G['.tspdbg'];
+_G['.tspdbg'] = nil
 local expressionVariables = {};
 if (tspdbg) then
     kiSetTableToStringFunction = function(t)

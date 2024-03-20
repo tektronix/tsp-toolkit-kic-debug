@@ -1,5 +1,7 @@
+use anyhow::Error;
 use clap::{arg, command, Args, Command, FromArgMatches, Parser, Subcommand};
 use kic_debug::debugger::Debugger;
+use kic_debug::error::DebugError;
 use std::ffi::OsString;
 use std::fs;
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4, TcpStream};
@@ -74,15 +76,14 @@ fn main() -> anyhow::Result<()> {
         .map_err(|err| err.exit())
         .unwrap();
 
-    eprintln!("Keithley Instruments Script Debugger");
-
     let mut lm = LicenseManager::new();
     lm.init_license();
     lm.register();
     let is_trial_available = lm.is_trial_active();
     if !is_trial_available {
-        println!("Debugger cannot be started.");
-        return Ok(());
+        return Err(Error::from(DebugError::DebugLicenseRejection {
+            reason: "trail license is not active.".to_string(),
+        }));
     }
 
     let mut debugger = match sub {
@@ -97,8 +98,7 @@ fn main() -> anyhow::Result<()> {
             //       If/when the debugger extension supports login, this should be removed.
             let inst_login_state = instrument.check_login()?;
             if State::NotNeeded != inst_login_state {
-                println!("Instrument is password protected or is unable to respond");
-                return Ok(());
+                return Err(Error::from(DebugError::InstrumentPasswordProtected));
             }
 
             Debugger::new(instrument)

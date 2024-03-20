@@ -16,9 +16,15 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
     Security -- in case of vulnerabilities.
 -->
 
-### [unreleased]
+## [0.14.1]
 
-## Fixed
+### Changed
+- Delete debugger source from instrument after loading (TSP-515)
+
+### Added
+- Improved license exception handling (TSP-582)
+
+### Fixed
 - Add watchpoint and set-variable features are broken (TSP-596)
 
 ## [0.13.2]
@@ -43,9 +49,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### Added
 - Debugger is implemented
-<!--Version Comparison Links-->
-[Unreleased]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/compare/v0.13.2...HEAD
-<!--Version Comparison Links-->
+
+
+[Unreleased]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/compare/v0.14.1...HEAD
+[0.14.1]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.14.1
 [0.13.2]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.13.2
 [0.13.0]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.13.0
 [0.12.1]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.12.1
