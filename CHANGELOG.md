@@ -16,6 +16,11 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
     Security -- in case of vulnerabilities.
 -->
 
+### [unreleased]
+
+## Fixed
+- Add watchpoint and set-variable features are broken (TSP-596)
+
 ## [0.13.2]
 
 ### Changed

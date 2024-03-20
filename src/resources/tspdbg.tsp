@@ -415,46 +415,60 @@ function tspdbg:log(...)
     end
 end
 
+function tspdbg:errorOnSettingVariable(msg)
+    local msg = msg;
+    if (msg == nil) then
+        msg = " value can not be set";
+    end
+    tspdbg:print(tspdbg.startTag .. "<SetVariable error ='" .. msg .. "' />" .. tspdbg.endTag);
+end
+
 function tspdbg:dataToJson(o, currentLevel, endLevel)
-	local s = ''
-	if type(o) == "table" then
+    local s = ''
+    if type(o) == "table" then
         if currentLevel == endLevel then
             return '"expansion not allowed"'
         end
-		s = s .. '{ "table" : ['
-		local obj_str = ''
+        s = s .. '{ "table" : ['
+        local obj_str = ''
         local i = 0
-		for k, v in pairs(o) do
-			if string.len(obj_str) > 0 then
-				obj_str = obj_str .. ','
-			end
-			local rhs = tspdbg:dataToJson(v, currentLevel + 1, endLevel)
-            obj_str = obj_str .. '{ "name":'..tspdbg:dataToJson(k, currentLevel + 1, endLevel).. ', "value" :' ..rhs ..'}'
-		end
-		s = s .. obj_str .. ']}'
-	elseif type(o) == "string" then
-		s = s .. '"' .. o .. '"'
-	elseif type(o) == "boolean" then
-		if o then
-			s = s .. "true"
-		else
-			s = s .. "false"
-		end
-	elseif type(o) == "nil" then
-		s = s .. "null"
-	elseif type(o) == "number" then
-		s = s .. tostring(o)
-	elseif type(o) == "function" then
-		s = s .. '"FUNCTION"'
-	elseif type(o) == "'userdata'" then
-		s = s .. '"USERDATA"'
-	elseif type(o) == "thread" then
-		s = s .. '"THREAD"'
-	else
-		s = s .. '' .. type(o) .. ''
-	end
+        for k, v in pairs(o) do
+            if string.len(obj_str) > 0 then
+                obj_str = obj_str .. ','
+            end
+            local key = ""
+            local rhs = tspdbg:dataToJson(v, currentLevel + 1, endLevel)
+            if type(k) == 'table' then
+                key = '"<TABLE>"'
+            else
+                key = tspdbg:dataToJson(k, currentLevel + 1, endLevel)
+            end
+            obj_str = obj_str .. '{ "name":' .. key .. ', "value" :' .. rhs .. '}'
+        end
+        s = s .. obj_str .. ']}'
+    elseif type(o) == "string" then
+        s = s .. '"' .. o .. '"'
+    elseif type(o) == "boolean" then
+        if o then
+            s = s .. "true"
+        else
+            s = s .. "false"
+        end
+    elseif type(o) == "nil" then
+        s = s .. "null"
+    elseif type(o) == "number" then
+        s = s .. tostring(o)
+    elseif type(o) == "function" then
+        s = s .. '"<FUNCTION>"'
+    elseif type(o) == "'userdata'" then
+        s = s .. '"<USERDATA>"'
+    elseif type(o) == "thread" then
+        s = s .. '"<THREAD>"'
+    else
+        s = s .. '' .. type(o) .. ''
+    end
 
-	return s
+    return s
 end
 
 ---it returns length of a table
@@ -495,14 +509,23 @@ function tspdbg:escape(s)
     for i = 1, string.len(s) do
         local byte = string.byte(s, i);
         local byteString;
-        if (byte > 127) then byteString = string.format("&#x02%d;", byte);
-        elseif (byte < 32) then byteString = string.format("&#x24%02x;", byte);
-        elseif (byte == 38) then byteString = "&amp;";
-        elseif (byte == 34) then byteString = "&quot;";
-        elseif (byte == 39) then byteString = "&apos;";
-        elseif (byte == 60) then byteString = "&lt;";
-        elseif (byte == 62) then byteString = "&gt;";
-        else byteString = string.char(byte); end
+        if (byte > 127) then
+            byteString = string.format("&#x02%d;", byte);
+        elseif (byte < 32) then
+            byteString = string.format("&#x24%02x;", byte);
+        elseif (byte == 38) then
+            byteString = "&amp;";
+        elseif (byte == 34) then
+            byteString = "&quot;";
+        elseif (byte == 39) then
+            byteString = "&apos;";
+        elseif (byte == 60) then
+            byteString = "&lt;";
+        elseif (byte == 62) then
+            byteString = "&gt;";
+        else
+            byteString = string.char(byte);
+        end
         table.insert(byteStrings, byteString);
     end
     return table.concat(byteStrings);
@@ -632,15 +655,15 @@ function tspdbg:sendstacktrace(topSkipCount)
             "'>");
         self:sendWatchpoints(level - 3 + topSkipCount);
         self:sendglobals(level - 3 + topSkipCount, true, true);
-        self:sendupvalues(level - 3 + topSkipCount, true);
-        self:sendlocals(level - 3 + topSkipCount, true);
+        self:sendupvalues(level - 3 + topSkipCount, true, level);
+        self:sendlocals(level - 3 + topSkipCount, true, level);
         self:print("    </stack>");
     end
     self:print("  </stacks>");
     self:print(self.endTag);
 end
 
-function tspdbg:sendlocals(level, nested)
+function tspdbg:sendlocals(level, nested, tableLevel)
     if (not (nested)) then
         self:print(self.startTag);
         self:print("  <locals level='" .. level .. "'>");
@@ -653,12 +676,13 @@ function tspdbg:sendlocals(level, nested)
             if name then
                 local tableData = ""
                 if string.starts(type(value), 'table') then
-                    tspdbg.tableDictionary[name] = value
-                    tableData = "' tableData='"..tostring(tspdbg:dataToJson(value, 0, 10))
+                    tspdbg.tableDictionary["(".. name .. ", ".. tostring(tableLevel)..")"] = value
+                    tableData = "' tableData='" .. tostring(tspdbg:dataToJson(value, 0, 10))
                 end
                 self:print("    <local name='" ..
                     self:escape(name) ..
-                    "' value='" .. self:escape(self:tolimitedstring(value)) .. "' type='" .. type(value) ..tableData.."' />");
+                    "' value='" ..
+                    self:escape(self:tolimitedstring(value)) .. "' type='" .. type(value) .. tableData .. "' />");
             else
                 break;
             end
@@ -673,7 +697,7 @@ function tspdbg:sendlocals(level, nested)
     end
 end
 
-function tspdbg:sendupvalues(level, nested)
+function tspdbg:sendupvalues(level, nested, tableLevel)
     if (not (nested)) then
         self:print(self.startTag);
         self:print("  <upvalues level='" .. level .. "'>");
@@ -686,12 +710,13 @@ function tspdbg:sendupvalues(level, nested)
             if name then
                 local tableData = ""
                 if string.starts(type(value), 'table') then
-                    tspdbg.tableDictionary[name] = value
-                    tableData = "' tableData='"..tostring(tspdbg:dataToJson(value, 0, 10))
+                    tspdbg.tableDictionary["(".. name .. ", ".. tostring(tableLevel)..")"] = value
+                    tableData = "' tableData='" .. tostring(tspdbg:dataToJson(value, 0, 10))
                 end
                 self:print("    <upvalue name='" ..
                     self:escape(name) ..
-                    "' value='" .. self:escape(self:tolimitedstring(value)) .. "' type='" .. type(value) ..tableData.. "' />");
+                    "' value='" ..
+                    self:escape(self:tolimitedstring(value)) .. "' type='" .. type(value) .. tableData .. "' />");
             else
                 break;
             end
@@ -710,10 +735,10 @@ end
 ---@param watchpointTable table<string, any>
 function tspdbg:printWatchpoints(watchpointTable)
     self:print("  <watchpoints>");
-    for key,value in pairs(watchpointTable) do
+    for key, value in pairs(watchpointTable) do
         self:print("    <watchpoint expression='" ..
-                    self:escape(tostring(key)) ..
-                    "' value='" .. self:escape(self:tolimitedstring(value)) .. "' type='" .. type(value) .. "' />");
+            self:escape(tostring(key)) ..
+            "' value='" .. self:escape(self:tolimitedstring(value)) .. "' type='" .. type(value) .. "' />");
     end
 
     self:print("</watchpoints>")
@@ -722,27 +747,27 @@ end
 ---Updates expressions with values, that are present in scope, in watchpointTable.
 ---@param stackLevel number stack frame level starts from zero
 function tspdbg:sendWatchpoints(stackLevel)
-        local watchpointTable = {}
-        local len = tspdbg:getTableLength(tspdbg.watchpoints)
-        if(len > 0) then
-            local env = tspdbg:createExpressionEnvironment(tspdbg.expressionVariables, stackLevel + 5);
-            for watchLoop = 1, len do
-                local watchpoint = tspdbg.watchpoints[watchLoop]
-                if watchpoint.enabled then
-                    local success, value = watchpoint:evaluateInEnvironment(env);
-                    if (success) then
+    local watchpointTable = {}
+    local len = tspdbg:getTableLength(tspdbg.watchpoints)
+    if (len > 0) then
+        local env = tspdbg:createExpressionEnvironment(tspdbg.expressionVariables, stackLevel + 5);
+        for watchLoop = 1, len do
+            local watchpoint = tspdbg.watchpoints[watchLoop]
+            if watchpoint.enabled then
+                local success, value = watchpoint:evaluateInEnvironment(env);
+                if (success) then
+                    watchpointTable[watchpoint.source] = value
+                else
+                    if (value ~= nil) then
+                        -- invalid watch expression and it's value added
                         watchpointTable[watchpoint.source] = value
-                    else
-                        if (value ~= nil) then
-                            -- invalid watch expression and it's value added
-                            watchpointTable[watchpoint.source] = value
-                        end
                     end
                 end
             end
         end
-        tspdbg:printWatchpoints(watchpointTable)
     end
+    tspdbg:printWatchpoints(watchpointTable)
+end
 
 function tspdbg:sendglobals(level, nested, omitfunction)
     if (not (nested)) then
@@ -753,31 +778,33 @@ function tspdbg:sendglobals(level, nested, omitfunction)
     end
     local success, info = pcall(function() return debug.getinfo(level + 7); end);
     if success then
-        local function printGlobals() 
+        local function printGlobals()
             if (not (omitfunction)) then
                 self:print("    <function name='" ..
-                self:escape(tostring(info.name)) ..
-                "' source='" ..
-                self:escape(tostring(info.source)) ..
-                "' linedefined='" .. self:escape(info.linedefined or -1) .. "' />");
+                    self:escape(tostring(info.name)) ..
+                    "' source='" ..
+                    self:escape(tostring(info.source)) ..
+                    "' linedefined='" .. self:escape(info.linedefined or -1) .. "' />");
             end
             local envVar = getfenv(info.func)
 
             for name, val in pairs(envVar) do
-                if(tspdbg.excludeGlobal[name] == nil and name ~= nil and string.starts(tostring(name), 'table:') == false) then
+                if (tspdbg.excludeGlobal[name] == nil and name ~= nil and string.starts(tostring(name), 'table:') == false) then
                     local value = _G[name]
                     local tableData = ""
                     local metaTable = getmetatable(_G[name])
                     local isTable = string.starts(type(value), 'table')
-                    local showTable = isTable and (metaTable == nil or ((metaTable["Getters"] == nil or metaTable["Setters"] == nil or metaTable["Objects"] == nil)))
-                    
+                    local showTable = isTable and
+                    (metaTable == nil or ((metaTable["Getters"] == nil or metaTable["Setters"] == nil or metaTable["Objects"] == nil)))
+
                     if showTable then
-                        tableData = "' tableData='"..tostring(tspdbg:dataToJson(value, 0, 10))
+                        tableData = "' tableData='" .. tostring(tspdbg:dataToJson(value, 0, 10))
                     end
                     if isTable == false or showTable then
-                    self:print("    <global name='" ..
-                        self:escape(tostring(name)) ..
-                        "' value='" .. self:escape(self:tolimitedstring(value)) .. "' type='" .. type(value) ..tableData.."' />");
+                        self:print("    <global name='" ..
+                            self:escape(tostring(name)) ..
+                            "' value='" ..
+                            self:escape(self:tolimitedstring(value)) .. "' type='" .. type(value) .. tableData .. "' />");
                     end
                 end
             end
@@ -842,7 +869,7 @@ end
 ---@return string|number|table|nil value returns the value of expression
 function tspdbg:evaluateExpression(expression, stackLevel)
     local retVal = tspdbg:compileExpression(expression)
-    if(retVal.compilationError) then
+    if (retVal.compilationError) then
         return false, nil
     end
     local variables = {}
@@ -858,19 +885,31 @@ end
 ---@param stackLevel number starts from zero
 ---@param expressionValue string value or expression to set e.g: "nil"
 ---@param argTable table variable arguments e.g: "tab", "x", "y"
----@return string | nil retVal if success it returns name of variable otherwise it returns nil
 function tspdbg:kiSetStructureDataValue(stackLevel, expressionValue, argTable)
-
-    local varTable = tspdbg.tableDictionary[argTable[1]]
+    ---@return string | nil retVal if success it returns name of variable otherwise it returns nil
+    local varTable = tspdbg.tableDictionary["(".. argTable[1] .. ", ".. tostring(stackLevel)..")"]
+    if (varTable == nil) then
+        tspdbg:errorOnSettingVariable()
+        return nil
+    end
     for i = 2, argTable.n - 1, 1 do
-        varTable = varTable[argTable[i]]
+        if (varTable[argTable[i]] ~= nil and type(varTable[argTable[i]]) == "table") then
+            varTable = varTable[argTable[i]]
+        else
+            tspdbg:errorOnSettingVariable()
+            return nil
+        end
     end
     local success, value = tspdbg:evaluateExpression(expressionValue, stackLevel);
-    if success then
+    if success and varTable ~= nil then
+        if (varTable[argTable[argTable.n]] == nil) then
+            tspdbg:errorOnSettingVariable()
+            return nil
+        end
         varTable[argTable[argTable.n]] = value
         return argTable[argTable.n]
     else
-        self:print("<SetVariable error ='" .. self:escape(value) .. "' />");
+        tspdbg:errorOnSettingVariable()
     end
     return nil
 end
@@ -880,7 +919,7 @@ local function getFunctionVariables(func)
     if func then
         local dumpsuccess, bytes = pcall(string.dump, func);
         if dumpsuccess then
-            local chunk = _G['.tspdbg']:ChunkSpy(nil, bytes);
+            local chunk = tspdbg:ChunkSpy(nil, bytes);
             table.foreach(chunk.func.k, function(BxPlus1, name)
                 for pc, inst in chunk.func.inst do
                     if (inst.Bx == BxPlus1 - 1) then
@@ -1207,8 +1246,9 @@ function tspdbg:ChunkSpy(chunk_name, chunk)
     convert_from["long long"] = convert_from["int"]
     convert_to["double"] = function(x)
         local sign = 0
-        if x < 0 then sign = 1;
-        x = -x
+        if x < 0 then
+            sign = 1;
+            x = -x
         end
         local mantissa, exponent = math.frexp(x)
         if x == 0 then
@@ -1231,8 +1271,9 @@ function tspdbg:ChunkSpy(chunk_name, chunk)
     end
     convert_to["single"] = function(x)
         local sign = 0
-        if x < 0 then sign = 1;
-        x = -x
+        if x < 0 then
+            sign = 1;
+            x = -x
         end
         local mantissa, exponent = math.frexp(x)
         if x == 0 then
@@ -1266,9 +1307,12 @@ function tspdbg:ChunkSpy(chunk_name, chunk)
             local carry = 1
             for i = 1, config.size_lua_Number do
                 local c = 255 - math.mod(x, 256) + carry
-                if c == 256 then c = 0;
-                carry = 1
-                else carry = 0 end
+                if c == 256 then
+                    c = 0;
+                    carry = 1
+                else
+                    carry = 0
+                end
                 v = v .. string.char(c);
                 x = math.floor(x / 256)
             end
@@ -1637,8 +1681,9 @@ function tspdbg:ChunkSpy(chunk_name, chunk)
 
             local start = idx
             local stat = {}
-            local function SetStat(item) stat[item] = idx - start;
-            start = idx
+            local function SetStat(item)
+                stat[item] = idx - start;
+                start = idx
             end
 
             func.source = LoadString()

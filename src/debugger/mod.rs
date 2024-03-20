@@ -192,11 +192,11 @@ impl Debugger {
         let mut arg_list: String = "".to_string();
         while index < var_info.argument_list.len() {
             el = var_info.argument_list[index].to_owned();
-            let ele = format!("\"{el}\"");
-            arg_list = format!("{arg_list},{ele}");
+            arg_list = format!("{arg_list},{el}");
             index += 1;
         }
         arg_list = arg_list.trim_start_matches([',', ' ']).to_string();
+
         let level = var_info.stack_level.to_string();
         let mut value = var_info.value.to_string();
         value = value.replace('\"', "\\\"");

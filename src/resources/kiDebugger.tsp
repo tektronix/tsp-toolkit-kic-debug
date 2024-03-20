@@ -887,17 +887,25 @@ end
 ---@param ... string heirarchy of table field. Example: To change value of "tab.x.y", variable arguments will be sent as "tab", "x", "y" in respective order
 function kiSetGlobalVariable(stackLevel, value, ...)
     local retVal = nil
-    local success, value = tspdbg:evaluateExpression(value, stackLevel -1);
+    local success, value = tspdbg:evaluateExpression(value, stackLevel - 1);
     if(success) then
         if arg.n == 1 then
             retVal = tspdbg:setGlobalVariable(arg[1], value)
         else
-            varTable = _G[arg[1]]
-            for i = 2, arg.n - 1, 1 do
-                varTable = varTable[arg[i]]
+            if (_G[arg[1]] == nil) then
+                tspdbg:errorOnSettingVariable()
+            else
+                local varTable = _G[arg[1]]
+                for i = 2, arg.n - 1, 1 do
+                    if (varTable[arg[i]] == nil) then
+                        tspdbg:errorOnSettingVariable()
+                        break;
+                    else
+                        varTable = varTable[arg[i]]
+                    end
+                end
+                varTable[arg[arg.n]] = value
             end
-            varTable[arg[arg.n]] = value
-            retVal= arg[arg.n]
         end
     else
         tspdbg:print("<SetVariable error ='" .. tspdbg:escape(tostring(value)) .. "' />");
