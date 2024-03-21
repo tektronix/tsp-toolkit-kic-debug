@@ -6,7 +6,7 @@ use std::ffi::OsString;
 use std::fs;
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4, TcpStream};
 use std::sync::Arc;
-use tsp_toolkit_kic_lib::instrument::{Instrument, State};
+use tsp_toolkit_kic_lib::instrument::{self, Instrument, State};
 use tsp_toolkit_kic_lib::interface::async_stream::AsyncStream;
 use tsp_toolkit_kic_lib::Interface;
 
@@ -97,8 +97,21 @@ fn main() -> anyhow::Result<()> {
             //FIXME: This code will automatically exit if the instrument requires a login.
             //       If/when the debugger extension supports login, this should be removed.
             let inst_login_state = instrument.check_login()?;
-            if State::NotNeeded != inst_login_state {
-                return Err(Error::from(DebugError::InstrumentPasswordProtected));
+            match inst_login_state {
+                State::Needed | State::LogoutNeeded => {
+                    return Err(Error::from(DebugError::InstrumentPasswordProtected));
+                }
+                State::NotNeeded => {}
+            }
+            //FIXME: This code will automatically exit if the instrument is using the
+            //       wrong language mode. If/when the debugger extension supports user
+            //       prompts, this should be removed. (See the implementation in
+            //       tsp-toolkit-kic-cli for reference.)
+            match instrument.as_mut().get_language()? {
+                instrument::CmdLanguage::Scpi => {
+                    return Err(DebugError::InstrumentLanguageError.into())
+                }
+                instrument::CmdLanguage::Tsp => {}
             }
 
             Debugger::new(instrument)

@@ -112,7 +112,8 @@ impl Debugger {
         let file_name = Self::format_scriptname(file_name_str.to_string_lossy().to_string());
         let mut script_name = format!("kic_{file_name}");
         self.debuggee_file_name = Some(script_name.clone());
-        script_name.truncate(255);
+        script_name.truncate(31);
+        // script_name.truncate(255);
         self.instrument.write_script(
             script_name.clone().as_bytes(),
             file_content.as_bytes(),
@@ -535,6 +536,10 @@ impl Debugger {
     /// Parse user command
     /// * `input` - A &str holds user input from the terminal
     /// * Return - A Result of Request
+    ///
+    /// # Errors
+    /// Returns a [`DebugError::CommandError`] if [`shlex`] could not properly split the input
+    #[allow(clippy::too_many_lines)]
     pub fn parse_user_commands(input: &str) -> Result<Request> {
         if input.trim().is_empty() {
             return Ok(Request::None);
@@ -576,67 +581,55 @@ impl Debugger {
                     match breakpoint_info {
                         Some(bpoint) => {
                             let bp: std::result::Result<Breakpoint, serde_json::Error> =
-                                serde_json::from_str(&bpoint.as_str()); // need to do it
+                                serde_json::from_str(bpoint.as_str()); // need to do it
                             match bp {
-                                Ok(bp) => {
-                                    return Ok(Request::BreakPoint {
-                                        breakpoint_info: bp,
-                                    });
-                                }
+                                Ok(bp) => Ok(Request::BreakPoint {
+                                    breakpoint_info: bp,
+                                }),
                                 Err(e) => {
                                     Self::println_flush(&format!("serde error: {:?}", e));
-                                    return Ok(Request::GetError(e.to_string()));
+                                    Ok(Request::GetError(e.to_string()))
                                 }
                             }
                         }
-                        _ => {
-                            return Ok(Request::GetError(
-                                "Error: Could not find setBreakpoint command argrument".to_string(),
-                            ))
-                        }
-                    };
+                        _ => Ok(Request::GetError(
+                            "Error: Could not find setBreakpoint command argrument".to_string(),
+                        )),
+                    }
                 }
                 Some(("setWatchpoint", flag)) => {
                     let watchpoint_info = flag.get_one::<String>("Watchpoint");
                     match watchpoint_info {
                         Some(wpoint) => {
                             let wp: std::result::Result<WatchpointInfo, serde_json::Error> =
-                                serde_json::from_str(&wpoint.as_str()); // need to do it
+                                serde_json::from_str(wpoint.as_str()); // need to do it
                             match wp {
-                                Ok(wp) => {
-                                    return Ok(Request::Watchpoint {
-                                        watchpoint_info: wp,
-                                    });
-                                }
-                                Err(e) => return Ok(Request::GetError(e.to_string())),
+                                Ok(wp) => Ok(Request::Watchpoint {
+                                    watchpoint_info: wp,
+                                }),
+                                Err(e) => Ok(Request::GetError(e.to_string())),
                             }
                         }
-                        _ => {
-                            return Ok(Request::GetError(
-                                "Error: Could not find setWatchpoint command argrument".to_string(),
-                            ))
-                        }
-                    };
+                        _ => Ok(Request::GetError(
+                            "Error: Could not find setWatchpoint command argrument".to_string(),
+                        )),
+                    }
                 }
                 Some(("setVariable", flag)) => {
                     let variable_info = flag.get_one::<String>("Variable");
                     match variable_info {
                         Some(vpoint) => {
                             let vp: std::result::Result<VariableInfo, serde_json::Error> =
-                                serde_json::from_str(&vpoint.as_str()); // need to do it
+                                serde_json::from_str(vpoint.as_str()); // need to do it
                             match vp {
-                                Ok(vp) => {
-                                    return Ok(Request::Variable { vairable_info: vp });
-                                }
-                                Err(e) => return Ok(Request::GetError(e.to_string())),
+                                Ok(vp) => Ok(Request::Variable { vairable_info: vp }),
+                                Err(e) => Ok(Request::GetError(e.to_string())),
                             }
                         }
-                        _ => {
-                            return Ok(Request::GetError(
-                                "Error: Could not find setVariable command argrument".to_string(),
-                            ))
-                        }
-                    };
+                        _ => Ok(Request::GetError(
+                            "Error: Could not find setVariable command argrument".to_string(),
+                        )),
+                    }
                 }
                 _ => {
                     match flag.subcommand() {
@@ -646,21 +639,17 @@ impl Debugger {
                                 serde_json::from_str(debug_info); // need to do it.
 
                             match di {
-                                Ok(di) => {
-                                    return Ok(Request::StartDebugger {
-                                        file_path: di.file_name,
-                                        break_points: di.break_points,
-                                    });
-                                }
-                                Err(e) => return Ok(Request::GetError(e.to_string())),
+                                Ok(di) => Ok(Request::StartDebugger {
+                                    file_path: di.file_name,
+                                    break_points: di.break_points,
+                                }),
+                                Err(e) => Ok(Request::GetError(e.to_string())),
                             }
                         }
 
-                        _ => {
-                            return Ok(Request::GetError(
-                                "Error: Could not find debug command argrument".to_string(),
-                            ))
-                        }
+                        _ => Ok(Request::GetError(
+                            "Error: Could not find debug command argrument".to_string(),
+                        )),
                     }
                 }
             },

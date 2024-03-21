@@ -21,6 +21,10 @@ pub enum DebugError {
     #[error("Instrument is password protected or is unable to respond.")]
     InstrumentPasswordProtected,
 
+    /// Instrument was is set to a Language-mode other than TSP
+    #[error("Instrument is set to a language mode other than TSP. Please set the language mode of the instrument and try again.")]
+    InstrumentLanguageError,
+
     /// An error coming from `tsp_toolkit_kic_lib`
     #[error("Instrument Error ocurred: {source}")]
     InstrumentError {

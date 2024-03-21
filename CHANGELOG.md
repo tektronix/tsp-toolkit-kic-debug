@@ -16,6 +16,16 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
     Security -- in case of vulnerabilities.
 -->
 
+## [Unreleased]
+
+## Added
+- If an instrument is set to a non-TSP language (e.g. SCPI), exit with an error
+  requesting the user change the language mode.
+
+## Fixed
+- Fix an issue in which a script name of greater than 27 characters will cause a TTI
+  instrument to throw an error when it is loaded. (TSP-613)
+
 ## [0.14.1]
 
 ### Changed
@@ -39,6 +49,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Fixed
 - Variable pane showing debugger script's variables and functions (TSP-489)
 - Fixed issue with fatal error in TTI instruments if a script name is too long (TSP-415)
+
 
 ## [0.12.1]
 
