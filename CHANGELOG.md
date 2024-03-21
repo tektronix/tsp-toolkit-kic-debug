@@ -26,6 +26,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### Fixed
 - Add watchpoint and set-variable features are broken (TSP-596)
+- Debugger never hits breakpoint (TSP-612)
 
 ## [0.13.2]
 
