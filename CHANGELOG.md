@@ -16,13 +16,14 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
     Security -- in case of vulnerabilities.
 -->
 
-## [Unreleased]
+## [0.15.0]
 
-## Added
+### Added
 - If an instrument is set to a non-TSP language (e.g. SCPI), exit with an error
   requesting the user change the language mode.
+- Trial License cross-verification
 
-## Fixed
+### Fixed
 - Fix an issue in which a script name of greater than 27 characters will cause a TTI
   instrument to throw an error when it is loaded. (TSP-613)
 
@@ -63,7 +64,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Debugger is implemented
 
 
-[Unreleased]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/compare/v0.14.1...HEAD
+[Unreleased]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/compare/v0.15.0...HEAD
+[0.15.0]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.15.0
 [0.14.1]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.14.1
 [0.13.2]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.13.2
 [0.13.0]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.13.0

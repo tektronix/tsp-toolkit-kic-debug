@@ -11,7 +11,7 @@ use tsp_toolkit_kic_lib::interface::async_stream::AsyncStream;
 use tsp_toolkit_kic_lib::Interface;
 
 use chrono::{DateTime, NaiveDateTime, Utc};
-use directories::UserDirs;
+use directories::{BaseDirs, UserDirs};
 use machineid_rs::HWIDComponent;
 use machineid_rs::{Encryption, IdBuilder};
 pub type GenericError = Box<dyn std::error::Error + Send + Sync>;
@@ -22,6 +22,10 @@ use std::{
     io::{BufRead, Write},
     path::Path,
 };
+
+use steganography::decoder::*;
+use steganography::encoder::*;
+use steganography::util::*;
 
 #[derive(Debug, Parser)]
 #[command(author, version, about, long_about = None)]
@@ -122,6 +126,7 @@ fn main() -> anyhow::Result<()> {
     Ok(debugger.start()?)
 }
 
+#[derive(PartialEq)]
 enum TrialStatus {
     Expired,
     Tampered,
@@ -193,12 +198,34 @@ impl LicenseManager {
         output
     }
 
+    fn get_cross_verification_key_file(&mut self) -> String {
+        let dir = BaseDirs::new().expect("directory not found");
+        let path = dir.cache_dir();
+        let mut kg = KeyGen::new();
+        let key = kg.get_new_key("crossKey".to_string());
+        let full_key = path.join(Path::new(&key[..8]));
+        let output: String = full_key.into_os_string().into_string().unwrap();
+        output
+    }
+
     pub fn init_license(&mut self) {
         let key_file = self.get_trial_key();
         let path = Path::new(&key_file);
-        if !path.exists() {
+        let does_key_file_exist = path.exists();
+        let is_cross_verified = self.is_cross_verification_successful(does_key_file_exist);
+
+        if !is_cross_verified {
+            self.trial_license = License {
+                trial_start_date: Utc::now(),
+                trial_status: TrialStatus::Tampered, //File tampered
+            };
+            println!("Trial tampered : Verification failed");
+            return;
+        }
+        if !does_key_file_exist {
             self.register();
         }
+
         let file_line = self.read_file_line(key_file);
         if !file_line.is_empty() {
             let clumps: Vec<&str> = file_line.split(',').collect();
@@ -207,7 +234,7 @@ impl LicenseManager {
                     trial_start_date: Utc::now(),
                     trial_status: TrialStatus::Tampered, //File tampered
                 };
-                println!("Trial tampered! : File issue");
+                println!("Trial tampered : File issue");
                 return;
             }
 
@@ -236,7 +263,7 @@ impl LicenseManager {
                     trial_status: status,
                 };
 
-                if matches!(self.trial_license.trial_status, TrialStatus::Tampered) {
+                if self.trial_license.trial_status != TrialStatus::Tampered {
                     self.update_key();
                 }
             } else {
@@ -313,6 +340,54 @@ impl LicenseManager {
         let msg_copy = msg.clone();
         let key = kg.get_new_key(msg);
         self.write_key_to_file(format!("{},{}", key, msg_copy).to_string());
+    }
+
+    fn is_cross_verification_successful(&mut self, is_trial_key_found: bool) -> bool {
+        let mut kg = KeyGen::new();
+        let cross_verification_key_file = self.get_cross_verification_key_file();
+        let filename = format!("{cross_verification_key_file}.png").to_string();
+        let cross_verification_path = Path::new(&filename);
+        let does_cross_verification_key_exist = cross_verification_path.exists();
+
+        let message = kg.get_new_key("trial".to_string());
+        if !does_cross_verification_key_exist && !is_trial_key_found {
+            //This is probably the first time trial verification is happening
+
+            let payload = str_to_bytes(&message);
+
+            let img_to_embed = include_bytes!("resources/keyI.png");
+
+            let destination_image = image::load_from_memory(img_to_embed).unwrap();
+
+            //Encode info into image
+            let enc = Encoder::new(payload, destination_image);
+            let result = enc.encode_alpha();
+            save_image_buffer(result, filename);
+
+            return true;
+        }
+
+        if is_trial_key_found {
+            if !does_cross_verification_key_exist {
+                return false; //Image to decode is not found
+            }
+            let encoded_image = file_as_image_buffer(filename);
+            //Create a decoder
+            let dec = Decoder::new(encoded_image);
+            //Decode the image by reading the alpha channel
+            let out_buffer = dec.decode_alpha();
+            //If there is no alpha, it's set to 255 by default so we filter those out
+            let clean_buffer: Vec<u8> = out_buffer.into_iter().filter(|b| *b != 0xff_u8).collect();
+            //Convert those bytes into a string we can read
+            let found_key = bytes_to_str(clean_buffer.as_slice());
+
+            if found_key == message {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return false;
     }
 
     fn write_key_to_file(&mut self, input: String) {
