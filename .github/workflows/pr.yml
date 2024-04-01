@@ -220,14 +220,16 @@ jobs:
         if: ${{ endsWith(github.base_ref, 'main') && (contains(github.head_ref, 'release/') || github.event.pull_request.merged) }}
         run: |
           git config --global --add safe.directory "$PWD"
-          apt-get install -yqq jq
+          apt install -yqq jq
           COMMIT="${{github.sha}}"
           if ${{contains(github.head_ref, 'release')}}; then
             V="${{github.head_ref}}"
             V="${V#release/}"
           else
             V="$(cargo metadata --format-version=1 --no-deps | jq '.packages[0].version')"
-            V=v${V//\"/} #remove '"'s
+            echo "Extracted version: $V"
+            V="$(echo "v${V}" | sed 's/\"//g')"
+            echo "Cleaned up version: $V"
           fi
 
           # Check to see if the version tag already exists
@@ -338,7 +340,9 @@ jobs:
             V="${V#release/}"
           else
             V="$(cargo metadata --format-version=1 --no-deps | jq '.packages[0].version')"
-            V=v${V//\"/} #remove '"'s
+            echo "Extracted version: $V"
+            V="$(echo "v${V}" | sed 's/\"//g')"
+            echo "Cleaned up version: $V"
           fi
 
           # Check to see if the version tag already exists
@@ -353,6 +357,7 @@ jobs:
           # 2) This is a feature branch being merged into the main branch.
           if ${{(! github.event.pull_request.merged && contains(github.head_ref, 'release/')) || (github.event.pull_request.merged && !contains(github.head_ref, 'release/'))}}; then
             V="${V}-$(git tag --list ${V}* | wc -l)"
+            echo "RC Version: $V"
           fi
 
           CL=${V#v}
