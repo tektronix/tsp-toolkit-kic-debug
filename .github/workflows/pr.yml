@@ -220,9 +220,9 @@ jobs:
         if: ${{ endsWith(github.base_ref, 'main') && (contains(github.head_ref, 'release/') || github.event.pull_request.merged) }}
         run: |
           git config --global --add safe.directory "$PWD"
-          apt install -yqq jq
+          apt-get update && apt-get install -yqq jq
           COMMIT="${{github.sha}}"
-          if ${{contains(github.head_ref, 'release')}}; then
+          if ${{contains(github.head_ref, 'release/')}}; then
             V="${{github.head_ref}}"
             V="${V#release/}"
           else
@@ -333,7 +333,7 @@ jobs:
         id: lasttag
         run: |
           git config --global --add safe.directory "$PWD"
-          apt-get install -yqq jq
+          apt-get update && apt-get install -yqq jq
           COMMIT="${{github.sha}}"
           if ${{contains(github.head_ref, 'release/')}}; then
             V="${{github.head_ref}}"
