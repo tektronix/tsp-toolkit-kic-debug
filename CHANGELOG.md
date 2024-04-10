@@ -17,7 +17,9 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 -->
 ## [0.15.1]
 
-
+### Changed
+- **tsp-toolkit-kic-lib:** Clean up instrument connections when an AsyncStream
+  stream is dropped
 
 ## [0.15.0]
 
