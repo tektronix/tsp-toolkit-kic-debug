@@ -418,17 +418,47 @@ local function remoteCommInput()
     local kiLoopState = 0
     ki.remotecomm.intercept = 1
     local sendPromptForNewCommand = true;
+    local waitTimeForInput = 0.005
     while true do
         if kiDebugState == "kiRun" then
-            break
+            kiLoopState = 1
+            waitTimeForInput = 0.002
         end
-        if (sendPromptForNewCommand) then
+        if (sendPromptForNewCommand and kiDebugState ~= "kiRun") then
             kiSendMessage(nil, "debug-prompt");
             sendPromptForNewCommand = false;
         end
         local msg = getmessage()
+        if (msg ~= nil and kiDebugState == "kiRun") then
+            local excludedCommandsList = {
+                "kiStepOver",
+                "kiStepIn",
+                "kiStepOut",
+                "kiRun",
+                "kiSetBreakpoints",
+                "kiSetWatchpoints",
+                "kiExecuteFromConsole"
+            }
+        
+            for i = 1, tspdbg:getTableLength(excludedCommandsList), 1 do
+                if string.starts(msg, excludedCommandsList[i]) then
+                    return
+                end
+            end
+            local cmdLineFunc, compilationError = loadstring(msg);
+            if (cmdLineFunc) then
+                local results = pack(xpcall(cmdLineFunc, debug.traceback));
+                local runOk = table.remove(results, 1);
+                if (not (runOk)) then
+                    kiSendMessage(nil, "command-execution-failed", "error", results[1]);
+                end
+            else
+                kiSendMessage(nil, "command-compilation-failed", "error", compilationError, "source", msg);
+            end
+            break
+        end
         if (msg == nil) then
-            delay(.005)
+            delay(waitTimeForInput)
         elseif string.starts(msg, "kiRun") then
             ki.remotecomm.intercept = 0;
             kiLoopState = 1
@@ -612,9 +642,7 @@ local function kiDebug()
     elseif kiDebugState == "kiStepOver" then
         remoteCommInput()
     elseif kiDebugState == "kiRun" then
-        kiSendMessage("DEBUG~~ECHO DEBUG CONSOLE")
-        kiSendMessage("Application running...")
-        kiSendMessage("DEBUG~~ECHO~~OFF DEBUG CONSOLE")
+        remoteCommInput()
     else
         error("Unknown kiDebugState: " .. tostring(kiDebugState));
     end
@@ -776,7 +804,7 @@ local function kiDebugHook(kiEvent, kiLine)
         end
         kiEvalVars = 0
     end
-    if kiResumeDebug == 1 then
+    if kiResumeDebug == 1 or kiEvent == "line" then
         kiDebug()
     end
 end

@@ -819,7 +819,7 @@ dependencies = [
 
 [[package]]
 name = "kic-debug"
-version = "0.15.1"
+version = "0.15.3"
 dependencies = [
  "anyhow",
  "bytes",
