@@ -381,13 +381,9 @@ impl LicenseManager {
             //Convert those bytes into a string we can read
             let found_key = bytes_to_str(clean_buffer.as_slice());
 
-            if found_key == message {
-                return true;
-            } else {
-                return false;
-            }
+            return found_key == message;
         }
-        return false;
+        false
     }
 
     fn write_key_to_file(&mut self, input: String) {
