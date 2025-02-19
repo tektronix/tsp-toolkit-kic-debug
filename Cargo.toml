@@ -1,7 +1,7 @@
 [package]
 name = "kic-debug"
 description = "A full-featured debugger that runs on an instrument."
-version = "0.15.3"
+version = "0.16.0"
 authors = ["Keithley Instruments, LLC"]
 edition = "2021"
 repository = "https://github.com/TEK-Engineering/tsp-toolkit-kic-debug"
@@ -31,6 +31,20 @@ shlex = "1.3.0"
 thiserror = "1.0.58"
 tracing = { version = "0.1.40", features = ["async-await"] }
 tracing-subscriber = "0.3.18"
-tsp-toolkit-kic-lib = { git = "https://github.com/tektronix/tsp-toolkit-kic-lib.git", tag = "v0.15.1"}
+tsp-toolkit-kic-lib = { git = "https://github.com/tektronix/tsp-toolkit-kic-lib.git", tag = "v0.19.5"}
 steganography = "1.0.2"
 image = "0.21.3"
+
+[workspace.lints.rust]
+warnings = "deny"
+
+[workspace.lints.clippy]
+pedantic = { level = "deny", priority = -1 }
+nursery = { level = "deny", priority = -1 }
+undocumented_unsafe_blocks = "deny"
+arithmetic_side_effects = "deny"
+
+[workspace.lints.rustdoc]
+all = "warn"
+missing_doc_code_examples = "warn"
+

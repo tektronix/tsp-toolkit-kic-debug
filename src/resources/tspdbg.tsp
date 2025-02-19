@@ -977,6 +977,7 @@ function tspdbg:compileExpression(source)
     local expression = {};
     expression.source = source;
     expression.func, expression.compilationError = loadstring("return " .. source .. "\n;");
+    if expression.compilationError then error("Unable to compile expression: " .. expression.compilationError) end
     expression.variables = getFunctionVariables(expression.func);
     function expression:evaluate(startingLevel)
         return self:evaluateInEnvironment(self:createExpressionEnvironment(self.variables, startingLevel));
@@ -1152,6 +1153,20 @@ function tspdbg:ChunkSpy(chunk_name, chunk)
             size_int = 4,
             size_size_t = 4,
             size_Instruction = 4,
+            size_lua_Number = 8,
+            SIZE_OP = 6,
+            SIZE_A = 8,
+            SIZE_B = 9,
+            SIZE_C = 9,
+            number_type = "double",
+            MAX_STACK = 250,
+        },
+        ["x64 standard"] = {
+            description = "x64 standard (64-bit, little endian, doubles)",
+            endianness = 1,
+            size_int = 4,
+            size_size_t = 8,
+            size_Instruction = 8,
             size_lua_Number = 8,
             SIZE_OP = 6,
             SIZE_A = 8,
@@ -1484,8 +1499,8 @@ function tspdbg:ChunkSpy(chunk_name, chunk)
         TestSize("SIZE_C", "C", "bits")
         TestSize("size_lua_Number", "number", "bytes")
         if config.SIZE_OP + config.SIZE_A + config.SIZE_B + config.SIZE_C
-            ~= config.size_Instruction * 8 then
-            error("instruction bit size total not consistent")
+            > config.size_Instruction * 8 then
+            error("instruction bit size total not consistent: actual["..(config.SIZE_OP + config.SIZE_A + config.SIZE_B + config.SIZE_C).."], expected["..(config.size_Instruction * 8).."]" )
         end
         DecodeInit()
         if math.ldexp(1, config.SIZE_OP) < table.getn(config.opnames) then

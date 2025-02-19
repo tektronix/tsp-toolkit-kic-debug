@@ -38,9 +38,6 @@ struct Cli {
 enum SubCli {
     /// Perform the given action over a LAN connection.
     Lan(LanConnectArgs),
-
-    /// Perform the given action over a USBTMC connection.
-    Usb(UsbConnectArgs),
 }
 
 #[derive(Debug, Args)]
@@ -51,14 +48,6 @@ struct LanConnectArgs {
 
     /// The IP address of the instrument to connect to.
     ip_addr: OsString,
-}
-
-#[derive(Debug, Args)]
-struct UsbConnectArgs {
-    /// The instrument address in the form of, for example, `05e6:2461:3`, where the
-    /// first part is the vendor id, the second part is the product id, and the third
-    /// part is the USB address on the bus.
-    addr: OsString,
 }
 
 fn main() -> anyhow::Result<()> {
@@ -120,7 +109,6 @@ fn main() -> anyhow::Result<()> {
 
             Debugger::new(instrument)
         }
-        SubCli::Usb(_args) => todo!(),
     };
 
     Ok(debugger.start()?)
