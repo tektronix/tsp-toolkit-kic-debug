@@ -1,21 +1,46 @@
 kiDebuggerVersion = { version = "0.9.1.2013.0520" };
+
+--- Get the scripts from the instrument in an instrument independent fashion
+---@return table scripts an associative array with scriptname as the key and the script object as the value
+function getscripts()
+    local scripts = {}
+    for x in _G do
+        local m = getmetatable(_G[x])
+        if m and m["Objects"] and m["Objects"]["source"] and type(m["Objects"]["source"]) ~= "table" then
+            scripts[x] = m
+        end
+    end
+
+    return scripts
+end
+
+--- Delete the given script
+---@param funcinfo debuginfo
+---@param defaultname string
 local function deleteScript(funcinfo, defaultname)
     local scriptname = defaultname;
     local namesOfScriptsToDelete = {};
-    for name, script in pairs(script.user.scripts) do
+    for name, script in getscripts() do
         if (script.run == funcinfo.func) or (script.name == scriptname) then
             scriptname = name;
             table.insert(namesOfScriptsToDelete, name);
         end
     end
-    for name in namesOfScriptsToDelete do
+    local catalog = {}
+    if script.user and script.user.catalog then
+        catalog = script.user.catalog()
+    elseif script.catalog then
+        catalog = script.catalog()
     end
-    _G[scriptname] = nil;
-    for name in script.user.catalog() do
+    for name in catalog do
         if (name == scriptname) then
-            script.user.delete(scriptname);
+            script.delete(scriptname);
             break;
         end
+    end
+
+    if _G[scriptname] then
+        _G[scriptname] = nil
     end
 end
 
@@ -94,12 +119,12 @@ end
 function string:split(str, seperator)
     local stringIndex = 1
     local splitTable = {}
-    while(true) do
+    while (true) do
         local startIndex, endIndex = string.find(str, seperator)
         if (startIndex == nil) then
             break
         end
-        table.insert(splitTable, string.sub(str, stringIndex, startIndex - 1 ))
+        table.insert(splitTable, string.sub(str, stringIndex, startIndex - 1))
         str = string.sub(str, endIndex + 1)
     end
     table.insert(splitTable, str)
@@ -134,14 +159,23 @@ local function kiSendMessage(text, elementName, ...)
             for i = 1, string.len(s) do
                 local byte = string.byte(s, i);
                 local byteString;
-                if (byte > 127) then byteString = string.format("&#x02%d;", byte);
-                elseif (byte < 32) then byteString = string.format("&#x24%02x;", byte);
-                elseif (byte == 38) then byteString = "&amp;";
-                elseif (byte == 34) then byteString = "&quot;";
-                elseif (byte == 39) then byteString = "&apos;";
-                elseif (byte == 60) then byteString = "&lt;";
-                elseif (byte == 62) then byteString = "&gt;";
-                else byteString = string.char(byte); end
+                if (byte > 127) then
+                    byteString = string.format("&#x02%d;", byte);
+                elseif (byte < 32) then
+                    byteString = string.format("&#x24%02x;", byte);
+                elseif (byte == 38) then
+                    byteString = "&amp;";
+                elseif (byte == 34) then
+                    byteString = "&quot;";
+                elseif (byte == 39) then
+                    byteString = "&apos;";
+                elseif (byte == 60) then
+                    byteString = "&lt;";
+                elseif (byte == 62) then
+                    byteString = "&gt;";
+                else
+                    byteString = string.char(byte);
+                end
                 table.insert(byteStrings, byteString);
             end
             return table.concat(byteStrings);
@@ -439,7 +473,7 @@ local function remoteCommInput()
                 "kiSetWatchpoints",
                 "kiExecuteFromConsole"
             }
-        
+
             for i = 1, tspdbg:getTableLength(excludedCommandsList), 1 do
                 if string.starts(msg, excludedCommandsList[i]) then
                     return
@@ -495,7 +529,8 @@ local function remoteCommInput()
                     delay(.005)
                 elseif ((string.lower(msg) == "abort") or (string.sub(string.lower(msg), 1, 6) == "login ")) then
                     if (string.sub(string.lower(msg), 1, 6) == "login ") then
-                        print("FAILURE: The debugger is active and it cannot proccess the LOGIN command. Aborting debugging. Try LOGIN again.");
+                        print(
+                            "FAILURE: The debugger is active and it cannot proccess the LOGIN command. Aborting debugging. Try LOGIN again.");
                     end
                     ki.remotecomm.intercept = 0
                     exit();
@@ -529,7 +564,8 @@ local function remoteCommInput()
                     delay(.005)
                 elseif ((string.lower(msg) == "abort") or (string.sub(string.lower(msg), 1, 6) == "login ")) then
                     if (string.sub(string.lower(msg), 1, 6) == "login ") then
-                        print("FAILURE: The debugger is active and it cannot proccess the LOGIN command. Aborting debugging. Try LOGIN again.");
+                        print(
+                            "FAILURE: The debugger is active and it cannot proccess the LOGIN command. Aborting debugging. Try LOGIN again.");
                     end
                     ki.remotecomm.intercept = 0
                     exit();
@@ -560,7 +596,8 @@ local function remoteCommInput()
                     delay(.005)
                 elseif ((string.lower(msg) == "abort") or (string.sub(string.lower(msg), 1, 6) == "login ")) then
                     if (string.sub(string.lower(msg), 1, 6) == "login ") then
-                        print("FAILURE: The debugger is active and it cannot proccess the LOGIN command. Aborting debugging. Try LOGIN again.");
+                        print(
+                            "FAILURE: The debugger is active and it cannot proccess the LOGIN command. Aborting debugging. Try LOGIN again.");
                     end
                     ki.remotecomm.intercept = 0
                     exit();
@@ -576,13 +613,15 @@ local function remoteCommInput()
                     end
                     local cmdExe, err = loadstring(msg)
                     if err then
-                        kiSendMessage("Debug Mode Error: You have entered a console statement that does not compile. Check syntax and try again.\n"
+                        kiSendMessage(
+                            "Debug Mode Error: You have entered a console statement that does not compile. Check syntax and try again.\n"
                             .. err)
                         kiSendMessage("TSP?")
                     else
                         local _, err = pcall(cmdExe)
                         if err then
-                            kiSendMessage("Debug Mode Error: You have entered a console statement that has generated an error. Check your statements and try again. \n"
+                            kiSendMessage(
+                                "Debug Mode Error: You have entered a console statement that has generated an error. Check your statements and try again. \n"
                                 .. err)
                             kiSendMessage("TSP?")
                         else
@@ -594,7 +633,8 @@ local function remoteCommInput()
         elseif (string.starts(msg, "abort") or (string.sub(string.lower(msg), 1, 6) == "login ")) then
             log(msg);
             if (string.sub(string.lower(msg), 1, 6) == "login ") then
-                print("FAILURE: The debugger is active and it cannot proccess the LOGIN command. Aborting debugging. Try LOGIN again.");
+                print(
+                    "FAILURE: The debugger is active and it cannot proccess the LOGIN command. Aborting debugging. Try LOGIN again.");
             end
             ki.remotecomm.intercept = 0;
             kiLoopState = 1;
@@ -681,6 +721,13 @@ local function kiDebugHook(kiEvent, kiLine)
             end
         end
     end
+    -- Useful for debugging. Keep this here for the future
+    --print("--------------------------------")
+    --print("kiDebugState == " .. kiDebugState)
+    --print("kiStackStepOver == " .. (kiStackStepOver or "nil"))
+    --print("kiStack == " .. (kiStack or "nil"))
+    --print("kiLine == ".. (kiLine or "nil"))
+    --print("kiEvent == " .. kiEvent)
     if kiEvent == "call" then
         kiStack = kiStack + 1
         local kiDebugInfo = debug.getinfo(2)
@@ -804,14 +851,15 @@ local function kiDebugHook(kiEvent, kiLine)
         end
         kiEvalVars = 0
     end
-    if kiResumeDebug == 1 or kiEvent == "line" then
+    if kiResumeDebug == 1 then
         kiDebug()
     end
 end
 
 local function ClearRemoteComm()
     if (not (ki.remotecomm) or not (ki.aborthook)) then
-        error("This instrument's firmware does not support debugging. Please check the Keithley website for a firmware update for this model. In the meantime, you can debug by \"checking simulate\" in the Select Instrument dialog. Obviously, the simulator won't provide real data so your script might behave differently without modifications to simulate the data that you expect.");
+        error(
+            "This instrument's firmware does not support debugging. Please check the Keithley website for a firmware update for this model. In the meantime, you can debug by \"checking simulate\" in the Select Instrument dialog. Obviously, the simulator won't provide real data so your script might behave differently without modifications to simulate the data that you expect.");
     end
     local intercept = 0;
     intercept, ki.remotecomm.intercept = ki.remotecomm.intercept, intercept;
@@ -854,7 +902,7 @@ local function traceback(message)
             table.insert(trace, string.format("%d:", info.currentline));
         end
         if (
-            info.namewhat == "global" or info.namewhat == "local" or info.namewhat == "field" or
+                info.namewhat == "global" or info.namewhat == "local" or info.namewhat == "field" or
                 info.namewhat == "method") then
             table.insert(trace, string.format(" in function `%s'", info.name));
         else
@@ -917,7 +965,7 @@ end
 function kiSetGlobalVariable(stackLevel, value, ...)
     local retVal = nil
     local success, value = tspdbg:evaluateExpression(value, stackLevel - 1);
-    if(success) then
+    if (success) then
         if arg.n == 1 then
             retVal = tspdbg:setGlobalVariable(arg[1], value)
         else
@@ -969,10 +1017,10 @@ function kiExecuteWithDebugger(source, sourceName, messageMode)
         kiRunOnExit = function(f)
             local previous = runOnExit;
             runOnExit =
-            function()
-                previous();
-                f();
-            end;
+                function()
+                    previous();
+                    f();
+                end;
         end;
         if (tspdbg) then
             tspdbg.usertopfunc = script;
@@ -984,7 +1032,10 @@ function kiExecuteWithDebugger(source, sourceName, messageMode)
         kiDebuggedSourceName = sourceName;
         inDebugConsoleBlock = false;
         kiDebugState = "kiRun";
-        local results = pack(xpcall(function() ClearRemoteComm(); debug.sethook(kiDebugHook, 'lcr'); script(); debug.sethook(); end
+        local results = pack(xpcall(
+            function()
+                ClearRemoteComm(); debug.sethook(kiDebugHook, 'lcr'); script(); debug.sethook();
+            end
             , errorHandler));
         local runOk = table.remove(results, 1);
         if (not runOk) then
