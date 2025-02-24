@@ -21,6 +21,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - Updated to use the 0.19.5 version of `tsp-toolkit-kic-lib`
 
+### Fixed
+
+- Fixed issue in debugging a file with nested functions
+
 
 ## [0.15.3]
 
