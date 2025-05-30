@@ -15,6 +15,13 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
     Fixed -- for any bug fixes.
     Security -- in case of vulnerabilities.
 -->
+## [0.16.1]
+
+### Added
+
+- Add `.debug restart` REPL command to restart the debugging session
+- Updated to latest version of `tsp-toolkit-kic-lib`
+
 ## [0.16.0]
 
 ### Changed
@@ -85,7 +92,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Debugger is implemented
 
 
-[Unreleased]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/compare/v0.16.0...HEAD
+[Unreleased]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/compare/v0.16.1...HEAD
+[0.16.1]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.16.1
 [0.16.0]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.16.0
 [0.15.3]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.15.3
 [0.15.1]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.15.1

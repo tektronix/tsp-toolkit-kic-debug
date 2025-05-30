@@ -65,7 +65,7 @@ mod unit {
             source: b"_KIC = {\n    version = \"!<!<VERSION>!>!\"\n}\n",
         };
 
-        let expected: String = format!("_KIC = {{\n    version = \"{}\"\n}}\n", VERSION);
+        let expected: String = format!("_KIC = {{\n    version = \"{VERSION}\"\n}}\n");
 
         assert_eq!(TEST_FILE.decrypt().unwrap().to_string(), expected);
     }

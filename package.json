@@ -1,6 +1,6 @@
 {
     "name": "@tek-engineering/kic-debug",
-    "version": "0.15.3",
+    "version": "0.16.1",
     "main": "index.js",
     "bin": {
         "windows-kic-debug": "./bin/kic-debug.exe",

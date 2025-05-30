@@ -324,10 +324,10 @@ impl LicenseManager {
             .trial_license
             .trial_start_date
             .format(LicenseManager::DATE_FORMAT);
-        let msg = format!("{},{}", register_time, current_time_string);
+        let msg = format!("{register_time},{current_time_string}");
         let msg_copy = msg.clone();
         let key = kg.get_new_key(msg);
-        self.write_key_to_file(format!("{},{}", key, msg_copy).to_string());
+        self.write_key_to_file(format!("{key},{msg_copy}").to_string());
     }
 
     fn is_cross_verification_successful(&mut self, is_trial_key_found: bool) -> bool {
@@ -382,8 +382,8 @@ impl LicenseManager {
             .truncate(true)
             .open(key_file)
             .unwrap();
-        if let Err(e) = write!(file, "{}", input) {
-            eprintln!("Could not write to file: {}.", e);
+        if let Err(e) = write!(file, "{input}") {
+            eprintln!("Could not write to file: {e}.");
         }
     }
 }

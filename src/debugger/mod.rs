@@ -5,7 +5,7 @@ use std::{
     fmt::Display,
     fs,
     io::{Error, Write},
-    path::Path,
+    path::{Path, PathBuf},
     sync::mpsc::{channel, SendError, Sender, TryRecvError},
     thread::{self, JoinHandle},
     time::Duration,
@@ -32,6 +32,8 @@ pub struct DebugInfo {
 pub struct Debugger {
     instrument: Box<dyn Instrument>, // reference of the instrument
     debuggee_file_name: Option<String>,
+    debuggee_file_path: Option<PathBuf>,
+    breakpoints: Vec<Breakpoint>,
 }
 
 impl Debugger {
@@ -42,6 +44,8 @@ impl Debugger {
         Self {
             instrument: inst,
             debuggee_file_name: None,
+            debuggee_file_path: None,
+            breakpoints: Default::default(),
         }
     }
 
@@ -65,7 +69,7 @@ impl Debugger {
         match pr {
             Ok(_) => {}
             Err(e) => {
-                eprintln!("Error: {:?}", e);
+                eprintln!("Error: {e:?}");
             }
         }
         Ok(())
@@ -77,7 +81,7 @@ impl Debugger {
         match pr {
             Ok(_) => {}
             Err(e) => {
-                eprintln!("Error {:?}", e);
+                eprintln!("Error {e:?}");
             }
         }
     }
@@ -183,6 +187,7 @@ impl Debugger {
             )
             .as_bytes(),
         )?;
+        self.breakpoints.push(break_point.clone());
 
         Ok(())
     }
@@ -232,6 +237,7 @@ impl Debugger {
     /// # Errors
     /// IO Errors from writing to the instrument may occur
     pub fn clear_breakpoints(&mut self) -> Result<()> {
+        self.breakpoints.clear();
         self.instrument.write_all(b"kiClearBreakpoints()\n")?;
 
         Ok(())
@@ -374,6 +380,7 @@ impl Debugger {
                         );
 
                         if let Ok(_file) = fs::File::open(file_path) {
+                            self.debuggee_file_path = Some(file_path.to_path_buf());
                             let file_contents = fs::read_to_string(file_path)?;
                             let script_name = file_path
                                 .file_stem()
@@ -411,9 +418,26 @@ impl Debugger {
                         clear_output_queue(&mut *self.instrument, 5, Duration::from_millis(100))?;
                         break 'user_loop;
                     }
-
+                    Request::Restart => {
+                        eprintln!("RESTART RECV'D");
+                        self.instrument.write_all(b"abort\n")?;
+                        self.instrument.write_all(b"*RST\n")?;
+                        let orig_file_name = self
+                            .debuggee_file_name
+                            .clone()
+                            .expect("should have file name in Debugger App");
+                        let orig_file_path = self
+                            .debuggee_file_path
+                            .clone()
+                            .expect("should have file path in Debugger App");
+                        let orig_breakpoints = self.breakpoints.clone();
+                        if let Ok(_file) = fs::File::open(&orig_file_path) {
+                            let file_contents = fs::read_to_string(&orig_file_path)?;
+                            self.start_debugger(&orig_file_name, &file_contents, orig_breakpoints)?;
+                        }
+                    }
                     Request::GetError(error) => {
-                        Self::println_flush(&format!("Error: {:?}", error));
+                        Self::println_flush(&format!("Error: {error:?}"));
                     }
 
                     Request::Tsp(tsp) => {
@@ -492,6 +516,11 @@ impl Debugger {
                             .about("set variable")
                             .disable_help_flag(true)
                             .arg(arg!([Variable]).value_parser(value_parser!(String)))
+                            .disable_help_flag(true),
+                    )
+                    .subcommand(
+                        Command::new("restart")
+                            .about("restart the debugger")
                             .disable_help_flag(true),
                     ),
             )
@@ -576,6 +605,7 @@ impl Debugger {
                 Some(("stepOut", _)) => Ok(Request::StepOut),
                 Some(("exit", _)) => Ok(Request::Exit),
                 Some(("clearBreakpoints", _)) => Ok(Request::ClearBreakPoints),
+                Some(("restart", _)) => Ok(Request::Restart),
                 Some(("setBreakpoint", flag)) => {
                     let breakpoint_info = flag.get_one::<String>("Breakpoint"); //matches.get_one::<PathBuf>("config")
                     match breakpoint_info {
@@ -587,7 +617,7 @@ impl Debugger {
                                     breakpoint_info: bp,
                                 }),
                                 Err(e) => {
-                                    Self::println_flush(&format!("serde error: {:?}", e));
+                                    Self::println_flush(&format!("serde error: {e:?}"));
                                     Ok(Request::GetError(e.to_string()))
                                 }
                             }

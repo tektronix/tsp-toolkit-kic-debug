@@ -34,5 +34,6 @@ pub enum Request {
         sub_cmd: Option<String>,
     },
     Usage(String),
+    Restart,
     None,
 }
