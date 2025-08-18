@@ -1,5 +1,5 @@
 {
-    "name": "@tek-engineering/kic-debug",
+    "name": "@tektronix/kic-debug",
     "version": "0.16.1",
     "main": "index.js",
     "bin": {
