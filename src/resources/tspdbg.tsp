@@ -460,7 +460,7 @@ function tspdbg:dataToJson(o, currentLevel, endLevel)
         s = s .. tostring(o)
     elseif type(o) == "function" then
         s = s .. '"<FUNCTION>"'
-    elseif type(o) == "'userdata'" then
+    elseif type(o) == "userdata" then
         s = s .. '"<USERDATA>"'
     elseif type(o) == "thread" then
         s = s .. '"<THREAD>"'

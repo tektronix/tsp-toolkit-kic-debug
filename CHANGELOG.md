@@ -19,8 +19,12 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### Added
 
-- Add `.debug restart` REPL command to restart the debugging session 
+- Add `.debug restart` REPL command to restart the debugging session
 - Updated to latest version of `tsp-toolkit-kic-lib`
+
+### Fixed
+
+- Fixed issue where the variables pane shows a JSON parse error
 
 ## [0.16.0]
 
