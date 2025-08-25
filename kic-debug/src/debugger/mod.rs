@@ -1,5 +1,6 @@
-use clap::{arg, command, value_parser, Command};
+use clap::{arg, value_parser, Command};
 use colored::Colorize;
+use kic_lib::instrument::{clear_output_queue, Instrument};
 use serde::{Deserialize, Serialize};
 use std::{
     fmt::Display,
@@ -10,7 +11,6 @@ use std::{
     thread::{self, JoinHandle},
     time::Duration,
 };
-use tsp_toolkit_kic_lib::instrument::{clear_output_queue, Instrument};
 pub mod breakpoint;
 pub mod variable;
 pub mod watchpoint;
@@ -465,7 +465,7 @@ impl Debugger {
     /// Command Line Interface
     #[allow(clippy::cognitive_complexity)]
     fn cli() -> Command {
-        command!()
+        Command::new("kic-debug")
             .multicall(true)
             .disable_help_subcommand(true)
             .allow_external_subcommands(true)
@@ -712,13 +712,13 @@ impl Drop for Debugger {
 //    //pub use crate::resources::{KIDEBUGGER_TSP, TSPDBG_TSP};
 //    use mockall::{mock, Sequence};
 //    use std::io::{Read, Write};
-//    use tsp_toolkit_kic_lib::instrument::authenticate::Authentication;
-//    use tsp_toolkit_kic_lib::instrument::Info;
-//    use tsp_toolkit_kic_lib::interface;
-//    use tsp_toolkit_kic_lib::interface::NonBlock;
-//    use tsp_toolkit_kic_lib::model::ki2600;
+//    use kic_lib::instrument::authenticate::Authentication;
+//    use kic_lib::instrument::Info;
+//    use kic_lib::interface;
+//    use kic_lib::interface::NonBlock;
+//    use kic_lib::model::ki2600;
 //
-//    // use tsp_toolkit_kic_lib::device_interface::Interface::MockInterface;
+//    // use kic_lib::device_interface::Interface::MockInterface;
 //    #[test]
 //    fn test_new() {
 //        let mut interface = MockInterface::new();
@@ -821,7 +821,7 @@ impl Drop for Debugger {
 //            .returning(|buf: &[u8]| Ok(buf.len()));
 //
 //        let instrument = ki2600::Instrument::new(
-//            tsp_toolkit_kic_lib::protocol::Protocol::Raw(Box::new(interface)),
+//            kic_lib::protocol::Protocol::Raw(Box::new(interface)),
 //            Box::new(auth),
 //        );
 //        let debugger = Debugger::new(Box::new(instrument));
@@ -935,7 +935,7 @@ impl Drop for Debugger {
 //            .returning(|buf: &[u8]| Ok(buf.len()));
 //
 //        let instrument = ki2600::Instrument::new(
-//            tsp_toolkit_kic_lib::protocol::Protocol::Raw(Box::new(interface)),
+//            kic_lib::protocol::Protocol::Raw(Box::new(interface)),
 //            Box::new(auth),
 //        );
 //        let mut debugger = Debugger::new(Box::new(instrument));
@@ -1054,7 +1054,7 @@ impl Drop for Debugger {
 //            .returning(|buf: &[u8]| Ok(buf.len()));
 //
 //        let instrument = ki2600::Instrument::new(
-//            tsp_toolkit_kic_lib::protocol::Protocol::Raw(Box::new(interface)),
+//            kic_lib::protocol::Protocol::Raw(Box::new(interface)),
 //            Box::new(auth),
 //        );
 //        let mut debugger = Debugger::new(Box::new(instrument));
@@ -1173,7 +1173,7 @@ impl Drop for Debugger {
 //    //
 //    //        // connect.expect_write().times(1).returning(|buf: &[u8]| Ok(buf.len()));
 //    //        let instrument = ki2600::Instrument::new(
-//    //            tsp_toolkit_kic_lib::protocol::Protocol::Raw(Box::new(interface)),
+//    //            kic_lib::protocol::Protocol::Raw(Box::new(interface)),
 //    //            Box::new(auth),
 //    //        );
 //    //        let mut debugger = Debugger::new(Box::new(instrument));
@@ -1296,7 +1296,7 @@ impl Drop for Debugger {
 //    //
 //    //        // connect.expect_write().times(1).returning(|buf: &[u8]| Ok(buf.len()));
 //    //        let instrument = ki2600::Instrument::new(
-//    //            tsp_toolkit_kic_lib::protocol::Protocol::Raw(Box::new(interface)),
+//    //            kic_lib::protocol::Protocol::Raw(Box::new(interface)),
 //    //            Box::new(auth),
 //    //        );
 //    //        let mut debugger = Debugger::new(Box::new(instrument));
@@ -1419,7 +1419,7 @@ impl Drop for Debugger {
 //            .returning(|buf: &[u8]| Ok(buf.len()));
 //
 //        let instrument = ki2600::Instrument::new(
-//            tsp_toolkit_kic_lib::protocol::Protocol::Raw(Box::new(interface)),
+//            kic_lib::protocol::Protocol::Raw(Box::new(interface)),
 //            Box::new(auth),
 //        );
 //        let mut debugger = Debugger::new(Box::new(instrument));
@@ -1533,7 +1533,7 @@ impl Drop for Debugger {
 //            .returning(|buf: &[u8]| Ok(buf.len()));
 //
 //        let instrument = ki2600::Instrument::new(
-//            tsp_toolkit_kic_lib::protocol::Protocol::Raw(Box::new(interface)),
+//            kic_lib::protocol::Protocol::Raw(Box::new(interface)),
 //            Box::new(auth),
 //        );
 //        let mut debugger = Debugger::new(Box::new(instrument));
@@ -1649,7 +1649,7 @@ impl Drop for Debugger {
 //        // let (interface, _) = test_exit(interface, seq);
 //
 //        let instrument = ki2600::Instrument::new(
-//            tsp_toolkit_kic_lib::protocol::Protocol::Raw(Box::new(interface)),
+//            kic_lib::protocol::Protocol::Raw(Box::new(interface)),
 //            Box::new(auth),
 //        );
 //        {
@@ -1765,7 +1765,7 @@ impl Drop for Debugger {
 //            .returning(|buf: &[u8]| Ok(buf.len()));
 //
 //        let instrument = ki2600::Instrument::new(
-//            tsp_toolkit_kic_lib::protocol::Protocol::Raw(Box::new(interface)),
+//            kic_lib::protocol::Protocol::Raw(Box::new(interface)),
 //            Box::new(auth),
 //        );
 //        let mut debugger = Debugger::new(Box::new(instrument));
@@ -1849,7 +1849,7 @@ impl Drop for Debugger {
 //            .returning(|buf: &[u8]| Ok(buf.len()));
 //
 //        let instrument = ki2600::Instrument::new(
-//            tsp_toolkit_kic_lib::protocol::Protocol::Raw(Box::new(interface)),
+//            kic_lib::protocol::Protocol::Raw(Box::new(interface)),
 //            Box::new(auth),
 //        );
 //        // debugger gets dropped when goes out of scope.
@@ -1877,7 +1877,7 @@ impl Drop for Debugger {
 //       }
 //
 //       impl NonBlock for Interface {
-//           fn set_nonblocking(&mut self, enable: bool) -> Result<(), tsp_toolkit_kic_lib::InstrumentError>;
+//           fn set_nonblocking(&mut self, enable: bool) -> Result<(), kic_lib::InstrumentError>;
 //       }
 //
 //       impl Info for Interface {}

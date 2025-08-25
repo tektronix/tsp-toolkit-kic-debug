@@ -1,18 +1,24 @@
+use anyhow::Context;
 use chrono::Utc;
 use clap::{command, value_parser, Arg, ArgMatches, Command};
 use colored::Colorize;
 use kic_debug::debugger::Debugger;
+use kic_lib::{
+    instrument::{authenticate::Authentication, CmdLanguage, Instrument, State},
+    model::connect_to,
+    ConnectionInfo,
+};
 use std::io::{stdin, ErrorKind};
+#[cfg(target_os = "windows")]
+use std::path::PathBuf;
 use std::process::exit;
 use std::thread;
 use std::time::Duration;
 use thiserror::Error;
 use tracing::{debug, error, info, trace, warn};
-use tsp_toolkit_kic_lib::{
-    instrument::{authenticate::Authentication, CmdLanguage, Instrument, State},
-    model::connect_to,
-    ConnectionInfo,
-};
+
+mod process;
+use crate::process::Process;
 
 #[derive(Error, Debug)]
 #[allow(clippy::module_name_repetitions)]
@@ -42,10 +48,38 @@ pub enum KicError {
     UnsupportedAction(String),
 
     #[error("instrument error: {0}")]
-    InstrumentError(#[from] tsp_toolkit_kic_lib::InstrumentError),
+    InstrumentError(#[from] kic_lib::InstrumentError),
 }
 
 fn main() -> anyhow::Result<()> {
+    let parent_dir: Option<std::path::PathBuf> = std::env::current_exe().map_or(None, |path| {
+        path.canonicalize()
+            .expect("should have canonicalized path")
+            .parent()
+            .map(std::convert::Into::into)
+    });
+
+    if kic_lib::is_visa_installed() {
+        #[cfg(target_os = "windows")]
+        let kic_visa_exe: Option<PathBuf> =
+            parent_dir.clone().map(|d| d.join("kic-debug-visa.exe"));
+
+        #[cfg(target_family = "unix")]
+        let kic_visa_exe: Option<PathBuf> = parent_dir.clone().map(|d| d.join("kic-debug-visa"));
+
+        if let Some(kv) = kic_visa_exe {
+            if kv.exists() {
+                Process::new(kv.clone(), std::env::args().skip(1))
+                    .exec_replace()
+                    .context(format!(
+                        "{} should have been launched because VISA was detected",
+                        kv.display(),
+                    ))?;
+                return Ok(());
+            }
+        }
+    }
+
     let cmd = command!()
         .propagate_version(true)
         .subcommand_required(true)
@@ -148,7 +182,7 @@ fn get_instrument_access(inst: &mut Box<dyn Instrument>) -> anyhow::Result<()> {
                 debug!("User accepted language change on the instrument.");
                 info!("Changing instrument language to TSP.");
                 inst.as_mut()
-                    .change_language(tsp_toolkit_kic_lib::instrument::CmdLanguage::Tsp)?;
+                    .change_language(kic_lib::instrument::CmdLanguage::Tsp)?;
                 info!("Instrument language changed to TSP.");
                 warn!("Instrument rebooting.");
                 inst.write_all(b"ki.reboot()\n")?;
@@ -158,7 +192,7 @@ fn get_instrument_access(inst: &mut Box<dyn Instrument>) -> anyhow::Result<()> {
                 exit(0);
             }
         }
-        tsp_toolkit_kic_lib::instrument::CmdLanguage::Tsp => {
+        kic_lib::instrument::CmdLanguage::Tsp => {
             debug!("Instrument language already set to TSP, no change necessary.");
         }
     }

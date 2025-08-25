@@ -25,12 +25,12 @@ pub enum DebugError {
     #[error("Instrument is set to a language mode other than TSP. Please set the language mode of the instrument and try again.")]
     InstrumentLanguageError,
 
-    /// An error coming from `tsp_toolkit_kic_lib`
+    /// An error coming from `kic_lib`
     #[error("Instrument Error ocurred: {source}")]
     InstrumentError {
         #[from]
-        /// The original `tsp_toolkit_kic_lib` error
-        source: tsp_toolkit_kic_lib::InstrumentError,
+        /// The original `kic_lib` error
+        source: kic_lib::InstrumentError,
     },
 
     /// An IO error occurred
