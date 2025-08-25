@@ -212,6 +212,9 @@ jobs:
             target/${{matrix.triple}}/release/kic*
             !target/${{matrix.triple}}/**/*.d
             !target/${{matrix.triple}}/**/*.rlib
+      - name: Install DBUS (linux only)
+        if: ${{ matrix.runner == 'ubuntu-latest' }}
+        run: sudo apt update && sudo apt install -y libdbus-1-dev
 
   package:
     name: Package
