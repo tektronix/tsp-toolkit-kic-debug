@@ -15,6 +15,13 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
     Fixed -- for any bug fixes.
     Security -- in case of vulnerabilities.
 -->
+## [0.16.2]
+
+### Added
+
+- Connect to instrument using a VISA connection
+- Connect to instrument with password
+
 ## [0.16.1]
 
 ### Added
@@ -96,7 +103,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Debugger is implemented
 
 
-[Unreleased]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/compare/v0.16.1...HEAD
+[Unreleased]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/compare/v0.16.2...HEAD
+[0.16.2]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.16.2
 [0.16.1]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.16.1
 [0.16.0]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.16.0
 [0.15.3]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.15.3
@@ -107,4 +115,3 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 [0.13.0]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.13.0
 [0.12.1]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.12.1
 [0.11.2]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.11.2
-
