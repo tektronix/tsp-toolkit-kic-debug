@@ -339,8 +339,6 @@ impl Debugger {
 
         let join = Self::init_user_input(user_out)?;
 
-        clear_output_queue(&mut *self.instrument, 5, Duration::from_millis(100))?;
-
         self.instrument.write_all(b"localnode.prompts = 0\n")?;
 
         Self::print_flush(&"\nTSP> ".blue())?;
@@ -348,8 +346,18 @@ impl Debugger {
             self.instrument.set_nonblocking(true)?;
             thread::sleep(Duration::from_millis(1));
             let mut read_buf: Vec<u8> = vec![0; 1024];
-            let read_size = self.instrument.read(&mut read_buf)?;
-            let read_buf: Vec<u8> = read_buf[..read_size].into();
+            match self.instrument.read(&mut read_buf) {
+                Ok(_) => {}
+                Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
+                    std::thread::sleep(Duration::from_millis(1));
+                    continue;
+                }
+                Err(e) => return Err(e.into()),
+            };
+            if read_buf.is_empty() {
+                std::thread::sleep(Duration::from_millis(1));
+                continue;
+            }
             if !String::from_utf8_lossy(&read_buf)
                 .trim_end_matches(char::from(0))
                 .is_empty()
