@@ -106,16 +106,6 @@ fn connect(args: &ArgMatches) -> anyhow::Result<Box<dyn Instrument>> {
         return Err(e);
     }
 
-    let info = match instrument.info() {
-        Ok(i) => i,
-        Err(e) => {
-            error!("Error getting instrument info: {e}");
-            return Err(e.into());
-        }
-    };
-
-    println!("Instrument is - {info:?}");
-
     Ok(instrument)
 }
 

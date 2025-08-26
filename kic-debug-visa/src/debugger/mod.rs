@@ -346,18 +346,12 @@ impl Debugger {
             self.instrument.set_nonblocking(true)?;
             thread::sleep(Duration::from_millis(1));
             let mut read_buf: Vec<u8> = vec![0; 1024];
-            match self.instrument.read(&mut read_buf) {
-                Ok(_) => {}
-                Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
-                    std::thread::sleep(Duration::from_millis(1));
-                    continue;
-                }
+            let read_size = match self.instrument.read(&mut read_buf) {
+                Ok(read_size) => read_size,
+                Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => 0,
                 Err(e) => return Err(e.into()),
             };
-            if read_buf.is_empty() {
-                std::thread::sleep(Duration::from_millis(1));
-                continue;
-            }
+            let read_buf: Vec<u8> = read_buf[..read_size].into();
             if !String::from_utf8_lossy(&read_buf)
                 .trim_end_matches(char::from(0))
                 .is_empty()
@@ -430,6 +424,7 @@ impl Debugger {
                         eprintln!("RESTART RECV'D");
                         self.instrument.write_all(b"abort\n")?;
                         self.instrument.write_all(b"*RST\n")?;
+                        std::thread::sleep(Duration::from_millis(100));
                         let orig_file_name = self
                             .debuggee_file_name
                             .clone()
@@ -554,7 +549,6 @@ impl Debugger {
                     //       a message quickly enough.
                     let mut input = String::new();
                     let _ = std::io::stdin().read_line(&mut input)?;
-                    println!("{}", input);
                     let req = Self::parse_user_commands(&input)?;
                     match out.send(req.clone()) {
                         Ok(()) => {}
@@ -606,7 +600,6 @@ impl Debugger {
 
         let matches = matches.subcommand();
 
-        println!("{:?}", matches);
         match matches {
             Some((".debug", flag)) => match flag.subcommand() {
                 Some(("run", _)) => Ok(Request::Run),
