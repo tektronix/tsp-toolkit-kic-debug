@@ -9,7 +9,6 @@ use kic_lib::{
     ConnectionInfo,
 };
 use std::io::{stdin, ErrorKind};
-#[cfg(target_os = "windows")]
 use std::path::PathBuf;
 use std::process::exit;
 use std::thread;
