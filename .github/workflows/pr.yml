@@ -205,8 +205,7 @@ jobs:
         run: |
           git config --global credential.helper store
           echo "https://${{vars.SERVICE_ACCOUNT_USER}}:${{secrets.SERVICE_ACCOUNT_PAT}}@github.com" > ~/.git-credentials
-          cargo build --target "${{matrix.triple}}" --release --package kic-debug
-          # cargo build --target "${{matrix.triple}}" --release --package kic-debug-visa
+          cargo build --target "${{matrix.triple}}" --release
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
