@@ -99,8 +99,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Debugger is implemented
 
 
-[Unreleased]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/compare/v0.16.2...HEAD
-[0.16.2]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.16.2
+[Unreleased]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/compare/v0.16.1...HEAD
 [0.16.1]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.16.1
 [0.16.0]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.16.0
 [0.15.3]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.15.3
