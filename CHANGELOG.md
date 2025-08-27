@@ -15,12 +15,15 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
     Fixed -- for any bug fixes.
     Security -- in case of vulnerabilities.
 -->
+
 ## [0.16.1]
 
 ### Added
 
 - Add `.debug restart` REPL command to restart the debugging session
 - Updated to latest version of `tsp-toolkit-kic-lib`
+- Connect to instrument using a VISA connection
+- Connect to instrument with password
 
 ### Fixed
 
@@ -107,4 +110,3 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 [0.13.0]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.13.0
 [0.12.1]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.12.1
 [0.11.2]: https://github.com/TEK-Engineering/tsp-toolkit-kic-debug/releases/tag/v0.11.2
-

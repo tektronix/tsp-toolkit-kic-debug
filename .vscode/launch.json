@@ -8,18 +8,13 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug Debugger",
-            "cwd": "${workspaceFolder}",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=kic-debug"
-                ]
-            },
+            "name": "Debug Rust Binary",
+            "program": "${workspaceFolder}/target/debug/kic-debug",
             "args": [
-                "lan",
-                "134.63.78.79",
-            ]
+            "connect",
+            "127.0.0.1"
+            ],
+            "cwd": "${workspaceFolder}",
         }
     ]
 }

@@ -1,0 +1,27 @@
+[package]
+name = "kic-debug-visa"
+description = "Tektronix TSP® communications commandline application."
+version = { workspace = true }
+authors = { workspace = true }
+edition = { workspace = true }
+repository = { workspace = true }
+
+[dependencies]
+anyhow = { workspace = true }
+chrono = { workspace = true }
+clap = { workspace = true }
+colored = { workspace = true }
+rpassword = { workspace = true }
+serde = { workspace = true }
+shlex = { workspace = true }
+regex = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+kic-lib = { workspace = true, features = ["visa"] }
+
+windows-sys = { version = "0.52.0", features = [
+    "Win32_System_Console",
+    "Win32_Foundation",
+] }
