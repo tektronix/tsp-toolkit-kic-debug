@@ -15,12 +15,6 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
     Fixed -- for any bug fixes.
     Security -- in case of vulnerabilities.
 -->
-## [0.16.2]
-
-### Added
-
-- Connect to instrument using a VISA connection
-- Connect to instrument with password
 
 ## [0.16.1]
 
@@ -28,6 +22,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - Add `.debug restart` REPL command to restart the debugging session
 - Updated to latest version of `tsp-toolkit-kic-lib`
+- Connect to instrument using a VISA connection
+- Connect to instrument with password
 
 ### Fixed
 
